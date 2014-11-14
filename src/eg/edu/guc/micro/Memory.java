@@ -2,21 +2,21 @@ public class Memory {
 	private static final int MEMORY_SIZE = 64;
 	private int instructionsPointer;
 	private int dataPointer;
-	private int hitTime;
+	private int accessTime;
 
-	public Memory(int hitTime) {
-		this.hitTime = hitTime;
+	public Memory(int accessTime) {
+		this.accessTime = accessTime;
 	}
 
 	public Memory() {
 
 	}
 
-	public void setHitTime(int hitTime) {
-		this.hitTime = hitTime;
+	public void setAccessTime(int accessTime) {
+		this.accessTime = accessTime;
 	}
 
-	public int getHitTime() {
-		return this.hitTime;
+	public int getAccessTime() {
+		return this.accessTime;
 	}
 }
