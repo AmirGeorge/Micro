@@ -1,3 +1,5 @@
+package eg.edu.guc.micro;
+
 public class Memory {
 	private static final int MEMORY_SIZE = 64;
 	private int instructionsPointer;
