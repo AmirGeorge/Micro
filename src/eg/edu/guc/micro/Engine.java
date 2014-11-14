@@ -33,7 +33,7 @@ public class Engine {
 		BufferedReader bfr = new BufferedReader(
 				new InputStreamReader(System.in));
 		String line;
-		System.out.println("Enter instructions");
+		System.out.println("Enter instructions, followed by END in a new line");
 		while (!(line = bfr.readLine()).equals("END")) {
 			instructions.add(Parser.getInstance().parse(line));
 		}
@@ -54,7 +54,7 @@ public class Engine {
 
 		System.out.println("Enter the Memory latency");
 		int hitTimeMemory = Integer.parseInt(bfr.readLine());
-		this.memory.setHitTime(hitTimeMemory);
+		this.memory.setAccessTime(hitTimeMemory);
 		System.out.println("Enter the number of cache levels");
 		int cacheLevels = Integer.parseInt(bfr.readLine());
 		for (int i = 1; i <= cacheLevels; i++) {
