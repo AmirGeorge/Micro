@@ -9,28 +9,30 @@ import java.util.StringTokenizer;
 
 import eg.edu.guc.parser.Parser;
 
-
 public class Engine {
-	
+
 	private static Engine _instance;
 
 	private Memory memory;
 	private LinkedList<Cache> caches;
 	private ArrayList<Instruction> instructions;
-	
+	private int pc = 0;
+	private int numberOfExecutedInstructions = 0;
+
 	private Engine() {
-		
+
 	}
-	
-	public static Engine getInstance() throws NumberFormatException, IOException {
+
+	public static Engine getInstance() throws NumberFormatException,
+			IOException {
 		if (_instance == null) {
 			_instance = new Engine();
 			_instance.init();
-			
+
 		}
 		return _instance;
 	}
-	
+
 	private void init() throws NumberFormatException, IOException {
 		caches = new LinkedList<Cache>();
 		memory = new Memory();
@@ -39,7 +41,6 @@ public class Engine {
 		readInstructions();
 		readData();
 	}
-
 
 	public LinkedList<Cache> getCaches() {
 		return this.caches;
@@ -55,15 +56,18 @@ public class Engine {
 			instructions.add(Parser.getInstance().parse(line));
 		}
 	}
-	
+
 	public void readData() {
-		//TODO
+		// TODO
 	}
 
-	public void run() {
+	public void run() throws NumberFormatException, IOException {
 		int instructionLatency;
 		int dataLatency;
+		// TODO modify to get instructions from instruction caches not from
+		// readInstructions() directly
 		for (Instruction instruction : instructions) {
+			instruction.execute();
 			// check Instruction Cache
 			// check Data Cache
 		}
@@ -99,10 +103,18 @@ public class Engine {
 	}
 
 	public void displayMemory() {
-		//TODO
+		// TODO
 	}
-	
+
 	public void displayCaches() {
-		//TODO
+		// TODO
+	}
+
+	public int getPC() {
+		return pc;
+	}
+
+	public void setPC(int pc) {
+		this.pc = pc;
 	}
 }
