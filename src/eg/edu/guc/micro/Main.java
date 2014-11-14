@@ -6,7 +6,7 @@ public class Main {
 
 	public static void main(String[] args) throws NumberFormatException,
 			IOException {
-		Engine x = new Engine();
+		Engine x = Engine.getInstance();
 		x.run();
 	}
 

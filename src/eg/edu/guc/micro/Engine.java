@@ -11,18 +11,35 @@ import eg.edu.guc.parser.Parser;
 
 
 public class Engine {
+	
+	private static Engine _instance;
 
 	private Memory memory;
 	private LinkedList<Cache> caches;
 	private ArrayList<Instruction> instructions;
-
-	public Engine() throws NumberFormatException, IOException {
+	
+	private Engine() {
+		
+	}
+	
+	public static Engine getInstance() throws NumberFormatException, IOException {
+		if (_instance == null) {
+			_instance = new Engine();
+			_instance.init();
+			
+		}
+		return _instance;
+	}
+	
+	private void init() throws NumberFormatException, IOException {
 		caches = new LinkedList<Cache>();
 		memory = new Memory();
 		instructions = new ArrayList<Instruction>();
 		readCacheInputs();
 		readInstructions();
+		readData();
 	}
+
 
 	public LinkedList<Cache> getCaches() {
 		return this.caches;
@@ -37,6 +54,10 @@ public class Engine {
 		while (!(line = bfr.readLine()).equals("END")) {
 			instructions.add(Parser.getInstance().parse(line));
 		}
+	}
+	
+	public void readData() {
+		//TODO
 	}
 
 	public void run() {
@@ -78,6 +99,10 @@ public class Engine {
 	}
 
 	public void displayMemory() {
-
+		//TODO
+	}
+	
+	public void displayCaches() {
+		//TODO
 	}
 }
