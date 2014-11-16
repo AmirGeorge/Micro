@@ -16,10 +16,10 @@ public class Engine {
 	private Memory memory;
 	private LinkedList<Cache> caches;
 	private ArrayList<Instruction> instructions;
-	private int pc = 0;
+	private int pc;
 	private int numberOfExecutedInstructions = 0;
 	private int numberOfCycles = 0;
-	private int InstructionsStartingAddress;
+	private int instructionsStartingAddress;
 
 	private Engine() {
 
@@ -54,6 +54,7 @@ public class Engine {
 				new InputStreamReader(System.in));
 		System.out.println("Enter starting address of instructions in memory");
 		setInstructionsStartingAddress(Integer.parseInt(bfr.readLine()));
+		pc = instructionsStartingAddress;
 		String line;
 		System.out.println("Enter instructions, followed by END in a new line");
 		while (!(line = bfr.readLine()).equals("END")) {
@@ -68,9 +69,23 @@ public class Engine {
 	public void run() throws NumberFormatException, IOException {
 		// int instructionLatency;
 		// int dataLatency;
+		int previousPC = pc;
+		// TODO test
+		while ((pc - instructionsStartingAddress) / 2 < instructions.size()) {
+			getInstructionFromCaches(pc);
+			instructions.get(pc - instructionsStartingAddress).execute();
+			numberOfExecutedInstructions++;
+			if (pc == previousPC) { // no branch or jump occured
+				pc += 2;// each instruction occupies 2 places in memory
+				previousPC += 2;
+			} else { // a branch or jump occured
+				previousPC = pc;
+			}
+		}
 		for (int i = 0; i < instructions.size(); i++) {
-			getInstructionFromCaches(InstructionsStartingAddress + (i * 2));
+			getInstructionFromCaches(instructionsStartingAddress + (i * 2));
 			instructions.get(i).execute();
+			numberOfExecutedInstructions++;
 		}
 	}
 
@@ -162,10 +177,26 @@ public class Engine {
 	}
 
 	public int getInstructionsStartingAddress() {
-		return InstructionsStartingAddress;
+		return instructionsStartingAddress;
 	}
 
-	private void setInstructionsStartingAddress(int instructionsStartingAddress) {
-		InstructionsStartingAddress = instructionsStartingAddress;
+	private void setInstructionsStartingAddress(int instructionsStartingAddress)
+			throws IOException {
+		if (instructionsStartingAddress % 2 != 0) {
+			throw new IOException("Instruction starting address must be even");
+		}
+		this.instructionsStartingAddress = instructionsStartingAddress;
+	}
+
+	public int getNumberOfExecutedInstructions() {
+		return numberOfExecutedInstructions;
+	}
+
+	public int getNumberOfCycles() {
+		return numberOfCycles;
+	}
+
+	public void AddToNumberOfCycles(int n) {
+		this.numberOfCycles = this.numberOfCycles + n;
 	}
 }
