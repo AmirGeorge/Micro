@@ -2,7 +2,6 @@ package eg.edu.guc.parser;
 
 import eg.edu.guc.micro.Instruction;
 
-
 public class Parser {
 
 	private static Parser _instance;
@@ -19,6 +18,7 @@ public class Parser {
 
 	public Instruction parse(String x) {
 		Instruction instruction = null;
+		// TODO assiuty
 		return instruction;
 	}
 

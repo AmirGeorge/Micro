@@ -17,7 +17,16 @@ public class Instruction {
 	public void execute() throws NumberFormatException, IOException {
 		RegisterFile regFile = RegisterFile.getInstance();
 		if (type == InstructionType.MEMORY_ACCESS) {
-			// TODO
+			Engine eng = Engine.getInstance();
+			if (instructionName.equals("LW")) {
+				regFile.setValueAt(
+						regA,
+						eng.loadDataFromCaches((short) (regFile
+								.getValueAt(regB)) + imm));
+			} else if (instructionName.equals("SW")) {
+				eng.writeData(regFile.getValueAt(regA),
+						(short) (regFile.getValueAt(regB) + imm));
+			}
 		} else if (type == InstructionType.CONTROL) {
 			Engine eng = Engine.getInstance();
 			if (instructionName.equals("JMP")) {

@@ -32,7 +32,9 @@ public class RegisterFile {
 	}
 
 	public void setValueAt(String regName, short value) {
-		regFile.put(regName, value);
+		if (!regName.equals("R0")) {
+			regFile.put(regName, value);
+		}
 	}
 
 }
