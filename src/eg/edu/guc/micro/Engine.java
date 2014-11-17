@@ -105,27 +105,28 @@ public class Engine {
 	}
 
 	public short loadDataFromCaches(int memLocation) {
-		// TODO mimi
-		// loop on caches from L1 to Ln until you find data, if not found
-		// get it from memory.
-		// if you find data in one of the caches then cache this
-		// data in all upper caches,
-		// if you get the data from memory then cache it in all caches
-		// from Ln to L1
-		// you will want to implement and use methods
-		// existsDataAtMemoryLocation(int location)
-		// and cacheTheDataAtMemoryLocation(int location) in Cache class
-		return 0;
-	}
-
-	public void writeData(short data, int memLocation) {
-		// TODO mimi
-		// write data to caches and memory according to write policies in cases
-		// of hit and miss
-		// note that data is 16 bits so it will need to occupy 2 memory
-		// location: memLocation and memLocation+1
-		// you will want to implement and use method writeDataToThisCache(short
-		// data, int memLocation) in Cache class
+		// # of cycels
+		short noOfCycels = 0;
+		int cacheIndex = -1;
+		int dataIndex = -1;
+		for (int i = 0; i < caches.size(); i++) {
+			dataIndex = caches.get(i).existsDataAtMemoryLocation(memLocation);
+			if (dataIndex != -1) {
+				cacheIndex = i;
+				break;
+			}
+		}
+		if (cacheIndex == -1) {
+			// not found in the caches
+		} else {
+			// found in cache index;
+			int data = caches.get(cacheIndex).loadDataFromCache(dataIndex,
+					memLocation);
+			for (int i = 0; i < cacheIndex; i++) {
+				caches.get(i).writeDataToThisCache(memLocation, data);
+			}
+		}
+		return noOfCycels;
 	}
 
 	public void readCacheInputs() throws NumberFormatException, IOException {

@@ -62,22 +62,28 @@ public class Cache {
 		// appropriate place in this cache
 	}
 
-	public boolean existsDataAtMemoryLocation(int location) {
-		// TODO mimi
-		// check if data having memory location (int location) is present
-		// in this cache
-		return false;
+	public int existsDataAtMemoryLocation(int location) {
+		for (int i = 0; i < this.data.length; i++) {
+			if (data[i].containsKey(location))
+				return i;
+		}
+		return -1;
+	}
+
+	public int loadDataFromCache(int dataIndex, int location) {
+		return this.data[dataIndex].get(location);
 	}
 
 	public void cacheTheDataAtMemoryLocation(int location) {
 		// TODO mimi
-		// put the datqa having memory location (int location) in its
+		// put the data having memory location (int location) in its
 		// appropriate place in this cache
 		// Note that you will cache a whole block not this data only, so handle
 		// this according to block size
 	}
 
-	public void writeDataToThisCache(short data, int memLocation) {
+	public void writeDataToThisCache(int memLocation, int data) {
 		// TODO mimi
+		// acording to the writing policy run
 	}
 }
