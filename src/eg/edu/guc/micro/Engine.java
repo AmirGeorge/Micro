@@ -106,9 +106,10 @@ public class Engine {
 
 	public short loadDataFromCaches(int memLocation) {
 		// # of cycels
-		short noOfCycels = 0;
+		// short noOfCycels = 0;
 		int cacheIndex = -1;
 		int dataIndex = -1;
+		short data = -1;
 		for (int i = 0; i < caches.size(); i++) {
 			dataIndex = caches.get(i).existsDataAtMemoryLocation(memLocation);
 			if (dataIndex != -1) {
@@ -117,16 +118,17 @@ public class Engine {
 			}
 		}
 		if (cacheIndex == -1) {
-			// not found in the caches
+			// not found in the caches,check the memory
+			data = Memory.getData(memLocation);
 		} else {
 			// found in cache index;
-			int data = caches.get(cacheIndex).loadDataFromCache(dataIndex,
+			data = caches.get(cacheIndex).loadDataFromCache(dataIndex,
 					memLocation);
 			for (int i = 0; i < cacheIndex; i++) {
-				caches.get(i).writeDataToThisCache(memLocation, data);
+				caches.get(i).cacheTheDataAtMemoryLocation(memLocation);
 			}
 		}
-		return noOfCycels;
+		return data;
 	}
 
 	public void readCacheInputs() throws NumberFormatException, IOException {
@@ -199,5 +201,10 @@ public class Engine {
 
 	public void AddToNumberOfCycles(int n) {
 		this.numberOfCycles = this.numberOfCycles + n;
+	}
+
+	public void writeData(short valueAt, short s) {
+		// TODO Auto-generated method stub
+
 	}
 }

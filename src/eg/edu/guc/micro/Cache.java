@@ -1,6 +1,8 @@
 package eg.edu.guc.micro;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Cache {
 
@@ -11,6 +13,7 @@ public class Cache {
 	private WritingPolicyHit writingPolicyHit;
 	private WritingPolicyMiss writingPolicyMiss;
 	private int noOfCycles;
+	private int sets;
 
 	// Instruction cache
 	private int[] instruction; // array index is cache address, array element is
@@ -20,13 +23,13 @@ public class Cache {
 								// addresses in memory are 5,6,7,8 )
 
 	// Data cache
-	private HashMap<Integer, Integer>[] data; // array index is cache address,
-												// hashmap key is memory address
-												// of cached data, hashmap value
-												// is data value(ex: if block
-												// size is 4 then each hashmap
-												// must have 4 entries w ykoono
-												// wara ba3d fel memory)
+	private HashMap<Integer, Short>[] data; // array index is cache address,
+											// hashmap key is memory address
+											// of cached data, hashmap value
+											// is data value(ex: if block
+											// size is 4 then each hashmap
+											// must have 4 entries w ykoono
+											// wara ba3d fel memory)
 
 	private int noOfAccesses = 0;
 	private int noOfMisses = 0;
@@ -43,7 +46,7 @@ public class Cache {
 		this.writingPolicyHit = writingPolicyHit;
 		this.writingPolicyMiss = writingPolicyMiss;
 		this.noOfCycles = noOfCycles;
-
+		this.sets = size / associativity;
 		this.instruction = new int[size / blockSize];
 		this.data = new HashMap[size / blockSize];
 
@@ -70,7 +73,7 @@ public class Cache {
 		return -1;
 	}
 
-	public int loadDataFromCache(int dataIndex, int location) {
+	public Short loadDataFromCache(int dataIndex, int location) {
 		return this.data[dataIndex].get(location);
 	}
 
@@ -80,10 +83,32 @@ public class Cache {
 		// appropriate place in this cache
 		// Note that you will cache a whole block not this data only, so handle
 		// this according to block size
+		int index = getCacheEntryIndex(location);
+		for (int i = 0; i < blockSize; i++) {
+			if (location < 64) {
+				Short data = Memory.getData(location);
+				this.data[index].put(location, data);
+				location++;
+			}
+		}
 	}
 
-	public void writeDataToThisCache(int memLocation, int data) {
-		// TODO mimi
-		// acording to the writing policy run
+	public int getCacheEntryIndex(int location) {
+		int blockNumber = location / this.blockSize;
+		return blockNumber % this.sets;
+	}
+
+	public void printCache() {
+		System.out.println("Set numbers " + sets);
+		for (int i = 0; i < this.data.length; i++) {
+			System.out.println("Entry " + i);
+			Iterator it = this.data[i].entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pairs = (Map.Entry) it.next();
+				System.out.println(pairs.getKey() + " = " + pairs.getValue());
+				it.remove(); // avoids a ConcurrentModificationException
+			}
+		}
+		System.out.println();
 	}
 }
