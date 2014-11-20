@@ -2,14 +2,14 @@ package eg.edu.guc.micro;
 
 public class Memory {
 	private static final int MEMORY_SIZE = 64;
-	private static int data[];
+	private static Short data[];
 	private int instructionsPointer;
 	private int dataPointer;
 	private int accessTime;
 
 	public Memory(int accessTime) {
 		this.accessTime = accessTime;
-		data = new int[64];
+		data = new Short[64];
 	}
 
 	public Memory() {
