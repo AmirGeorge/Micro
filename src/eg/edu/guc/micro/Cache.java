@@ -1,5 +1,6 @@
 package eg.edu.guc.micro;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,6 +32,7 @@ public class Cache {
 											// must have 4 entries w ykoono
 											// wara ba3d fel memory)
 
+	private boolean[] dataFlags;
 	private int noOfAccesses = 0;
 	private int noOfMisses = 0;
 
@@ -46,23 +48,25 @@ public class Cache {
 		this.writingPolicyHit = writingPolicyHit;
 		this.writingPolicyMiss = writingPolicyMiss;
 		this.noOfCycles = noOfCycles;
-		this.sets = size / associativity;
+		this.sets = (size / blockSize) / associativity;
 		this.instruction = new int[size / blockSize];
 		this.data = new HashMap[size / blockSize];
+		Arrays.fill(instruction, -1);
+		this.dataFlags = new boolean[size / blockSize];
 
 	}
 
 	public boolean existsInstructionAtMemoryLocation(int location) {
-		// TODO shary
-		// check if instruction having memory location (int location) is present
-		// in this cache
+		int blockNumber = location / blockSize;
+		int setIndex = blockNumber % sets;
+		int instCapacity = blockSize / 2;
+		for (int index = setIndex * associativity; index <= (setIndex + 1)
+				* associativity; index++) {
+			if (instruction[index] != -1 && location >= instruction[index]
+					&& instruction[index] + (instCapacity) - 1 >= location)
+				return true;
+		}
 		return false;
-	}
-
-	public void cacheTheInstructionAtMemoryLocation(int location) {
-		// TODO shary
-		// put the instruction having memory location (int location) in its
-		// appropriate place in this cache
 	}
 
 	public int existsDataAtMemoryLocation(int location) {
@@ -77,18 +81,46 @@ public class Cache {
 		return this.data[dataIndex].get(location);
 	}
 
+	public void cacheTheInstructionAtMemoryLocation(int location) {
+		int blockNumber = location / blockSize;
+		int setIndex = blockNumber % sets;
+		boolean cached = false;
+		for (int index = setIndex * associativity; index <= (setIndex + 1)
+				* associativity; index++) {
+			if (instruction[index] == -1 && !cached) {
+				cached = true;
+				instruction[index] = location;
+			}
+			if (!cached) {
+				instruction[setIndex * associativity] = location;
+			}
+		}
+	}
+
 	public void cacheTheDataAtMemoryLocation(int location) {
 		// TODO mimi
 		// put the data having memory location (int location) in its
 		// appropriate place in this cache
 		// Note that you will cache a whole block not this data only, so handle
 		// this according to block size
-		int index = getCacheEntryIndex(location);
-		for (int i = 0; i < blockSize; i++) {
-			if (location < 64) {
-				Short data = Memory.getData(location);
-				this.data[index].put(location, data);
-				location++;
+		int setIndex = getCacheEntryIndex(location);
+		int start = setIndex * associativity;
+		int end = (setIndex + 1) * associativity;
+		boolean wasPut = false;
+		for (int i = start; i < end; i++) {
+			if (!dataFlags[i]) {
+				this.data[i].put(location, Memory.getData(location));
+				dataFlags[i] = true;
+				wasPut = true;
+			}
+		}
+		if (!wasPut) {
+			for (int i = start; i < end; i++) {
+				if (location < 64) {
+					this.data[i].put(location, Memory.getData(location));
+					dataFlags[i] = true;
+					location++;
+				}
 			}
 		}
 	}
@@ -110,5 +142,25 @@ public class Cache {
 			}
 		}
 		System.out.println();
+	}
+
+	public int getNoOfCycles() {
+		return noOfCycles;
+	}
+
+	public int getNoOfAccesses() {
+		return noOfAccesses;
+	}
+
+	public void setNoOfAccesses(int noOfAccesses) {
+		this.noOfAccesses = noOfAccesses;
+	}
+
+	public int getNoOfMisses() {
+		return noOfMisses;
+	}
+
+	public void setNoOfMisses(int noOfMisses) {
+		this.noOfMisses = noOfMisses;
 	}
 }

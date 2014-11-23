@@ -9,7 +9,7 @@ public class Memory {
 
 	public Memory(int accessTime) {
 		this.accessTime = accessTime;
-		data = new Short[64];
+		data = new Short[64 * 1024];
 	}
 
 	public Memory() {

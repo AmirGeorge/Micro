@@ -89,19 +89,25 @@ public class Engine {
 		}
 	}
 
-	private void getInstructionFromCaches(int location) {
-		// TODO shary
-		// loop on caches from L1 to Ln until you find instruction, if not found
-		// get it from memory.
-		// if you find instruction in one of the caches then cache this
-		// instruction in all upper caches,
-		// if you get the instruction from memory then cache it in all caches
-		// from Ln to L1
-		// you will want to implement and use methods
-		// existsInstructionAtMemoryLocation(int location)
-		// and cacheTheInstructionAtMemoryLocation(int location) in Cache class
-		// Note that according to the pdf each instruction occupies two memory
-		// locations
+	private short getInstructionFromCaches(int location) {
+		int index = caches.size();
+		for (int c = 0; c < caches.size(); c++) {
+			if (caches.get(c).existsInstructionAtMemoryLocation(location)) {
+				index = c;
+				numberOfCycles += caches.get(c).getNoOfCycles();
+				caches.get(c).setNoOfAccesses(
+						caches.get(c).getNoOfAccesses() + 1);
+				break;
+			}
+
+		}
+		for (int up = index - 1; up >= 0; up--) {
+			caches.get(up).cacheTheInstructionAtMemoryLocation(location);
+			caches.get(up)
+					.setNoOfAccesses(caches.get(up).getNoOfAccesses() + 1);
+			caches.get(up).setNoOfMisses(caches.get(up).getNoOfMisses() + 1);
+		}
+		return Memory.getData(location);
 	}
 
 	public short loadDataFromCaches(int memLocation) {
@@ -120,6 +126,7 @@ public class Engine {
 		if (cacheIndex == -1) {
 			// not found in the caches,check the memory
 			data = Memory.getData(memLocation);
+			// TODO 7ot f el caches kolha
 		} else {
 			// found in cache index;
 			data = caches.get(cacheIndex).loadDataFromCache(dataIndex,
