@@ -31,13 +31,16 @@ public class Engine {
 		if (_instance == null) {
 			_instance = new Engine();
 			_instance.init();
-
 		}
 		return _instance;
 	}
 
 	private void init() throws NumberFormatException, IOException {
 		parser = Parser.getInstance();
+		instructions = parser.getParsedCode();
+		for (Instruction ins : instructions) {
+			System.out.println(ins);
+		}
 		caches = new LinkedList<Cache>();
 		caches.add(new Cache(16, 2, 1, 10, WritingPolicyHit.WRITE_BACK,
 				WritingPolicyMiss.WRITE_ALLOCATE, 5));
@@ -51,23 +54,28 @@ public class Engine {
 		memory.setData(1, (short) 20);
 		memory.setData(100, (short) 100);
 		// memory.setData(101, (short) 101);
-		instructions = new ArrayList<Instruction>();
 		// readCacheInputs();
 		// readInstructions();
 		// readData();
+		initPC();
 	}
 
 	public LinkedList<Cache> getCaches() {
 		return this.caches;
 	}
 
-	// add Instruction
-	public void readInstructions() throws IOException {
+	private void initPC() throws NumberFormatException, IOException {
 		BufferedReader bfr = new BufferedReader(
 				new InputStreamReader(System.in));
 		System.out.println("Enter starting address of instructions in memory");
 		setInstructionsStartingAddress(Integer.parseInt(bfr.readLine()));
 		pc = instructionsStartingAddress;
+	}
+
+	// add Instruction
+	public void readInstructions() throws IOException {
+		BufferedReader bfr = new BufferedReader(
+				new InputStreamReader(System.in));
 		String line;
 		System.out.println("Enter instructions, followed by END in a new line");
 		while (!(line = bfr.readLine()).equals("END")) {
@@ -240,4 +248,5 @@ public class Engine {
 	public Memory getMemory() {
 		return this.memory;
 	}
+
 }

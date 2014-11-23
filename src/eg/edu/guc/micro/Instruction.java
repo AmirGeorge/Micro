@@ -9,14 +9,14 @@ public class Instruction {
 	private String regB;
 	private String regC;
 	private short imm;
-	private int label;
+	private int label = -1;
 
 	public Instruction() {
-
 	}
 
 	public void execute() throws NumberFormatException, IOException {
 		RegisterFile regFile = RegisterFile.getInstance();
+		System.out.println(this);
 		if (type == InstructionType.MEMORY_ACCESS) {
 			Engine eng = Engine.getInstance();
 			if (instructionName.equals("LW")) {
@@ -31,10 +31,17 @@ public class Instruction {
 		} else if (type == InstructionType.CONTROL) {
 			Engine eng = Engine.getInstance();
 			if (instructionName.equals("JMP")) {
-				eng.setPC(eng.getPC() + 1 + regFile.getValueAt(regA) + imm);
+				if (label == -1)
+					eng.setPC(eng.getPC() + 1 + regFile.getValueAt(regA) + imm);
+				else
+					eng.setPC(eng.getInstructionsStartingAddress() + label * 2);
 			} else if (instructionName.equals("BEQ")) {
 				if (regFile.getValueAt(regA) == regFile.getValueAt(regB)) {
-					eng.setPC(eng.getPC() + 1 + imm);
+					if (label == -1)
+						eng.setPC(eng.getPC() + 1 + imm);
+					else
+						eng.setPC(eng.getInstructionsStartingAddress() + label
+								* 2);
 				}
 			} else if (instructionName.equals("JALR")) {
 				regFile.setValueAt(regA, (short) (eng.getPC() + 1));

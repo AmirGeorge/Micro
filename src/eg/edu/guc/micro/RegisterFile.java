@@ -10,14 +10,14 @@ public class RegisterFile {
 
 	private RegisterFile() {
 		regFile = new HashMap<String, Short>();
-		regFile.put("R0", (short) 0);
-		regFile.put("R1", (short) 0);
-		regFile.put("R2", (short) 0);
-		regFile.put("R3", (short) 0);
-		regFile.put("R4", (short) 0);
-		regFile.put("R5", (short) 0);
-		regFile.put("R6", (short) 0);
-		regFile.put("R7", (short) 0);
+		regFile.put("$R0", (short) 0);
+		regFile.put("$R1", (short) 0);
+		regFile.put("$R2", (short) 0);
+		regFile.put("$R3", (short) 0);
+		regFile.put("$R4", (short) 0);
+		regFile.put("$R5", (short) 0);
+		regFile.put("$R6", (short) 0);
+		regFile.put("$R7", (short) 0);
 	}
 
 	public static RegisterFile getInstance() {

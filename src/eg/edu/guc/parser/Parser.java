@@ -11,6 +11,7 @@ public class Parser {
 
 	private static Parser _instance;
 	private static ArrayList<ParserError> errors = new ArrayList<ParserError>();
+	private static ArrayList<Instruction> _parsedcode;
 	private static int lineNumber = 0;
 	private static Hashtable<String, String> labels = new Hashtable<String, String>();
 
@@ -26,7 +27,6 @@ public class Parser {
 			throws NumberFormatException, IOException {
 		ArrayList<Instruction> parsedCode = new ArrayList<Instruction>();
 		for (String instruction : submittedCode.split("\n")) {
-			System.out.println((instruction));
 			Object newInstruction = instructionSyntax(instruction);
 			lineNumber++;
 			if (newInstruction == null)
@@ -36,7 +36,11 @@ public class Parser {
 			else
 				parsedCode.add((Instruction) newInstruction);
 		}
-		return (errors.isEmpty()) ? parsedCode : null;
+		if (errors.isEmpty()) {
+			_parsedcode = parsedCode;
+			return _parsedcode;
+		}
+		return null;
 	}
 
 	private Object instructionSyntax(String instruction)
@@ -216,6 +220,10 @@ public class Parser {
 
 	public Hashtable<String, String> getLabels() {
 		return labels;
+	}
+
+	public ArrayList<Instruction> getParsedCode() {
+		return _parsedcode;
 	}
 
 	private static String buildInstruction(ArrayList<String> codeLine) {
