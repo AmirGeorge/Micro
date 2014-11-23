@@ -37,11 +37,22 @@ public class Engine {
 
 	private void init() throws NumberFormatException, IOException {
 		caches = new LinkedList<Cache>();
+		caches.add(new Cache(16, 2, 1, 10, WritingPolicyHit.WRITE_BACK,
+				WritingPolicyMiss.WRITE_ALLOCATE, 5));
+		caches.add(new Cache(16, 2, 2, 10, WritingPolicyHit.WRITE_BACK,
+				WritingPolicyMiss.WRITE_ALLOCATE, 5));
+		// caches.add(new Cache(16, 1, 1, 10, WritingPolicyHit.WRITE_BACK,
+		// WritingPolicyMiss.WRITE_ALLOCATE, 5));
+		// TODO test
 		memory = new Memory();
+		memory.setData(0, (short) 10);
+		memory.setData(1, (short) 20);
+		memory.setData(100, (short) 100);
+		// memory.setData(101, (short) 101);
 		instructions = new ArrayList<Instruction>();
-		readCacheInputs();
-		readInstructions();
-		readData();
+		// readCacheInputs();
+		// readInstructions();
+		// readData();
 	}
 
 	public LinkedList<Cache> getCaches() {
@@ -89,43 +100,62 @@ public class Engine {
 		}
 	}
 
-	private void getInstructionFromCaches(int location) {
-		// TODO shary
-		// loop on caches from L1 to Ln until you find instruction, if not found
-		// get it from memory.
-		// if you find instruction in one of the caches then cache this
-		// instruction in all upper caches,
-		// if you get the instruction from memory then cache it in all caches
-		// from Ln to L1
-		// you will want to implement and use methods
-		// existsInstructionAtMemoryLocation(int location)
-		// and cacheTheInstructionAtMemoryLocation(int location) in Cache class
-		// Note that according to the pdf each instruction occupies two memory
-		// locations
+	private short getInstructionFromCaches(int location) {
+		int index = caches.size();
+		for (int c = 0; c < caches.size(); c++) {
+			if (caches.get(c).existsInstructionAtMemoryLocation(location)) {
+				index = c;
+				numberOfCycles += caches.get(c).getNoOfCycles();
+				caches.get(c).setNoOfAccesses(
+						caches.get(c).getNoOfAccesses() + 1);
+				break;
+			}
+
+		}
+		for (int up = index - 1; up >= 0; up--) {
+			caches.get(up).cacheTheInstructionAtMemoryLocation(location);
+			caches.get(up)
+					.setNoOfAccesses(caches.get(up).getNoOfAccesses() + 1);
+			caches.get(up).setNoOfMisses(caches.get(up).getNoOfMisses() + 1);
+		}
+		return memory.getData(location);
 	}
 
-	public short loadDataFromCaches(int memLocation) {
-		// TODO mimi
-		// loop on caches from L1 to Ln until you find data, if not found
-		// get it from memory.
-		// if you find data in one of the caches then cache this
-		// data in all upper caches,
-		// if you get the data from memory then cache it in all caches
-		// from Ln to L1
-		// you will want to implement and use methods
-		// existsDataAtMemoryLocation(int location)
-		// and cacheTheDataAtMemoryLocation(int location) in Cache class
-		return 0;
-	}
-
-	public void writeData(short data, int memLocation) {
-		// TODO mimi
-		// write data to caches and memory according to write policies in cases
-		// of hit and miss
-		// note that data is 16 bits so it will need to occupy 2 memory
-		// location: memLocation and memLocation+1
-		// you will want to implement and use method writeDataToThisCache(short
-		// data, int memLocation) in Cache class
+	public short loadDataFromCaches(int memLocation)
+			throws NumberFormatException, IOException {
+		// # of cycels
+		// short noOfCycels = 0;
+		int cacheIndex = -1;
+		int dataIndex = -1;
+		short data = Short.MIN_VALUE;
+		for (int i = 0; i < caches.size(); i++) {
+			dataIndex = caches.get(i).existsDataAtMemoryLocation(memLocation);
+			if (dataIndex != -1) {
+				cacheIndex = i;
+				break;
+			}
+		}
+		if (cacheIndex == -1) {
+			// not found in the caches,check the memory
+			if (memory.getData(memLocation) == null)
+				System.out.println("No such data");
+			else
+				data = memory.getData(memLocation);
+			for (int i = 0; i < caches.size(); i++) {
+				caches.get(i).cacheTheDataAtMemoryLocation(memLocation);
+			}
+		} else {
+			// found in cache index;
+			if (memory.getData(memLocation) == null)
+				System.out.println("No such data");
+			else
+				data = caches.get(cacheIndex).loadDataFromCache(dataIndex,
+						memLocation);
+			for (int i = 0; i < cacheIndex; i++) {
+				caches.get(i).cacheTheDataAtMemoryLocation(memLocation);
+			}
+		}
+		return data;
 	}
 
 	public void readCacheInputs() throws NumberFormatException, IOException {
@@ -198,5 +228,14 @@ public class Engine {
 
 	public void AddToNumberOfCycles(int n) {
 		this.numberOfCycles = this.numberOfCycles + n;
+	}
+
+	public void writeData(short valueAt, short s) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public Memory getMemory() {
+		return this.memory;
 	}
 }

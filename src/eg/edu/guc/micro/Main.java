@@ -6,8 +6,21 @@ public class Main {
 
 	public static void main(String[] args) throws NumberFormatException,
 			IOException {
-		Engine x = Engine.getInstance();
-		x.run();
+		// System.out.println(8%8);
+		// Engine x = Engine.getInstance();
+		Engine.getInstance().loadDataFromCaches(0);
+		Engine.getInstance().loadDataFromCaches(3);
+		// Engine.getInstance().loadDataFromCaches(5);
+		// Engine.getInstance().loadDataFromCaches(7);
+		// Engine.getInstance().loadDataFromCaches(9);
+		// Engine.getInstance().loadDataFromCaches(11);
+		// x.getInstance().loadDataFromCaches(13);
+		// x.getInstance().loadDataFromCaches(15);
+		// x.getInstance().loadDataFromCaches(17);
+
+		for (Cache c : Engine.getInstance().getCaches())
+			c.printCache();
+		// x.run();
 	}
 
 }
