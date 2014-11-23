@@ -39,8 +39,8 @@ public class Engine {
 		caches = new LinkedList<Cache>();
 		caches.add(new Cache(16, 2, 1, 10, WritingPolicyHit.WRITE_BACK,
 				WritingPolicyMiss.WRITE_ALLOCATE, 5));
-		caches.add(new Cache(16, 2, 2, 10, WritingPolicyHit.WRITE_BACK,
-				WritingPolicyMiss.WRITE_ALLOCATE, 5));
+		// caches.add(new Cache(16, 2, 2, 10, WritingPolicyHit.WRITE_BACK,
+		// WritingPolicyMiss.WRITE_ALLOCATE, 5));
 		// caches.add(new Cache(16, 1, 1, 10, WritingPolicyHit.WRITE_BACK,
 		// WritingPolicyMiss.WRITE_ALLOCATE, 5));
 		// TODO test
@@ -48,7 +48,7 @@ public class Engine {
 		memory.setData(0, (short) 10);
 		memory.setData(1, (short) 20);
 		memory.setData(100, (short) 100);
-		// memory.setData(101, (short) 101);
+		memory.setData(101, (short) 101);
 		instructions = new ArrayList<Instruction>();
 		// readCacheInputs();
 		// readInstructions();
@@ -142,7 +142,8 @@ public class Engine {
 			else
 				data = memory.getData(memLocation);
 			for (int i = 0; i < caches.size(); i++) {
-				caches.get(i).cacheTheDataAtMemoryLocation(memLocation);
+				caches.get(i).cacheTheDataAtMemoryLocation(memLocation,
+						Short.MIN_VALUE);
 			}
 		} else {
 			// found in cache index;
@@ -152,10 +153,42 @@ public class Engine {
 				data = caches.get(cacheIndex).loadDataFromCache(dataIndex,
 						memLocation);
 			for (int i = 0; i < cacheIndex; i++) {
-				caches.get(i).cacheTheDataAtMemoryLocation(memLocation);
+				caches.get(i).cacheTheDataAtMemoryLocation(memLocation,
+						Short.MIN_VALUE);
 			}
 		}
 		return data;
+	}
+
+	public void writeData(int index, short newValue, int memLocation)
+			throws NumberFormatException, IOException {
+		// memory-level
+		if (index == caches.size()) {
+			Engine.getInstance().getMemory().setData(memLocation, newValue);
+		}
+		int dataIndex = -1;
+		dataIndex = caches.get(index).existsDataAtMemoryLocation(memLocation);
+		Cache cache = caches.get(index);
+		if (dataIndex != -1) {
+			if (cache.getWritingPolicyHit().equals(
+					WritingPolicyHit.WRITE_THROUGH)) {
+				caches.get(index).getData()[dataIndex].put(memLocation,
+						newValue);
+				writeData(index + 1, newValue, memLocation);
+			} else {
+				caches.get(index).setDirtyFlag(dataIndex);
+			}
+		} else {
+			// Cache miss
+			if (cache.getWritingPolicyMiss().equals(
+					WritingPolicyMiss.WRITE_AROUND)) {
+				caches.get(index).cachData(newValue, memLocation);
+				writeData(index + 1, newValue, memLocation);
+			} else {
+				caches.get(index).cachData(newValue, memLocation);
+				// feh error
+			}
+		}
 	}
 
 	public void readCacheInputs() throws NumberFormatException, IOException {
@@ -228,11 +261,6 @@ public class Engine {
 
 	public void AddToNumberOfCycles(int n) {
 		this.numberOfCycles = this.numberOfCycles + n;
-	}
-
-	public void writeData(short valueAt, short s) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public Memory getMemory() {
