@@ -1,6 +1,7 @@
 package eg.edu.guc.micro;
 
 import java.io.IOException;
+import java.io.ObjectInputStream.GetField;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -41,6 +42,7 @@ public class Cache {
 													// ykoono
 													// wara ba3d fel memory)
 
+	private boolean[] dirtyFlags;
 	private boolean[] blocksFlags;
 	private int noOfAccesses = 0;
 	private int noOfMisses = 0;
@@ -61,7 +63,8 @@ public class Cache {
 		this.instruction = new int[size / blockSize];
 		this.data = new LinkedHashMap[size / blockSize];
 		Arrays.fill(instruction, -1);
-		this.blocksFlags = new boolean[size];
+		this.blocksFlags = new boolean[size / blockSize];
+		this.dirtyFlags = new boolean[size / blockSize];
 		for (int i = 0; i < data.length; i++)
 			data[i] = new LinkedHashMap<Integer, Short>();
 	}
@@ -107,7 +110,7 @@ public class Cache {
 		}
 	}
 
-	public void cacheTheDataAtMemoryLocation(int location)
+	public void cacheTheDataAtMemoryLocation(int location, short newData)
 			throws NumberFormatException, IOException {
 		int setIndex = getCacheEntryIndex(location);
 		int start = setIndex * associativity;
@@ -115,26 +118,36 @@ public class Cache {
 		boolean cached = false;
 		for (int i = start; i <= end; i++) {
 			if (!blocksFlags[i]) {
-				// found empty block
 				int startAddress = location - (location % blockSize);
 				for (int j = 0; j < blockSize; j++) {
-					this.data[i].put(startAddress, Engine.getInstance()
-							.getMemory().getData(startAddress));
+					if (newData != Short.MIN_VALUE)
+						this.data[i].put(startAddress, newData);
+					else
+						this.data[i].put(startAddress, Engine.getInstance()
+								.getMemory().getData(startAddress));
 					startAddress++;
 				}
-				// Copy entry
 				blocksFlags[i] = true;
 				cached = true;
 				break;
 			}
 		}
-		// System.out.println(Arrays.toString(this.data));
 		if (!cached) {
 			int startAddress = location - (location % blockSize);
+			if (dirtyFlags[start]) {
+				// WRITE IN memory before replace
+				for (int key : data[start].keySet()) {
+					Engine.getInstance().getMemory()
+							.setData(key, data[start].get(key));
+				}
+			}
 			this.data[start].clear();
 			for (int j = 0; j < blockSize; j++) {
-				this.data[start].put(startAddress, Engine.getInstance()
-						.getMemory().getData(startAddress));
+				if (newData != Short.MIN_VALUE)
+					this.data[start].put(startAddress, newData);
+				else
+					this.data[start].put(startAddress, Engine.getInstance()
+							.getMemory().getData(startAddress));
 				startAddress++;
 				blocksFlags[start] = true;
 			}
@@ -189,5 +202,26 @@ public class Cache {
 
 	public void setNoOfMisses(int noOfMisses) {
 		this.noOfMisses = noOfMisses;
+	}
+
+	public WritingPolicyHit getWritingPolicyHit() {
+		return this.writingPolicyHit;
+	}
+
+	public WritingPolicyMiss getWritingPolicyMiss() {
+		return this.writingPolicyMiss;
+	}
+
+	public LinkedHashMap<Integer, Short>[] getData() {
+		return this.data;
+	}
+
+	public void setDirtyFlag(int index) {
+		this.dirtyFlags[index] = true;
+	}
+
+	public void cachData(short newValue, int memLocation) {
+		// TODO Auto-generated method stub
+
 	}
 }

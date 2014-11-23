@@ -25,7 +25,7 @@ public class Instruction {
 						eng.loadDataFromCaches((short) (regFile
 								.getValueAt(regB)) + imm));
 			} else if (instructionName.equals("SW")) {
-				eng.writeData(regFile.getValueAt(regA),
+				eng.writeData(0,regFile.getValueAt(regA),
 						(short) (regFile.getValueAt(regB) + imm));
 			}
 		} else if (type == InstructionType.CONTROL) {
