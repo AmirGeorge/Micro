@@ -37,11 +37,22 @@ public class Engine {
 
 	private void init() throws NumberFormatException, IOException {
 		caches = new LinkedList<Cache>();
+		caches.add(new Cache(16, 2, 1, 10, WritingPolicyHit.WRITE_BACK,
+				WritingPolicyMiss.WRITE_ALLOCATE, 5));
+		caches.add(new Cache(16, 2, 2, 10, WritingPolicyHit.WRITE_BACK,
+				WritingPolicyMiss.WRITE_ALLOCATE, 5));
+		// caches.add(new Cache(16, 1, 1, 10, WritingPolicyHit.WRITE_BACK,
+		// WritingPolicyMiss.WRITE_ALLOCATE, 5));
+		// TODO test
 		memory = new Memory();
+		memory.setData(0, (short) 10);
+		memory.setData(1, (short) 20);
+		memory.setData(100, (short) 100);
+		// memory.setData(101, (short) 101);
 		instructions = new ArrayList<Instruction>();
-		readCacheInputs();
-		readInstructions();
-		readData();
+		// readCacheInputs();
+		// readInstructions();
+		// readData();
 	}
 
 	public LinkedList<Cache> getCaches() {
@@ -107,15 +118,16 @@ public class Engine {
 					.setNoOfAccesses(caches.get(up).getNoOfAccesses() + 1);
 			caches.get(up).setNoOfMisses(caches.get(up).getNoOfMisses() + 1);
 		}
-		return Memory.getData(location);
+		return memory.getData(location);
 	}
 
-	public short loadDataFromCaches(int memLocation) {
+	public short loadDataFromCaches(int memLocation)
+			throws NumberFormatException, IOException {
 		// # of cycels
 		// short noOfCycels = 0;
 		int cacheIndex = -1;
 		int dataIndex = -1;
-		short data = -1;
+		short data = Short.MIN_VALUE;
 		for (int i = 0; i < caches.size(); i++) {
 			dataIndex = caches.get(i).existsDataAtMemoryLocation(memLocation);
 			if (dataIndex != -1) {
@@ -125,12 +137,20 @@ public class Engine {
 		}
 		if (cacheIndex == -1) {
 			// not found in the caches,check the memory
-			data = Memory.getData(memLocation);
-			// TODO 7ot f el caches kolha
+			if (memory.getData(memLocation) == null)
+				System.out.println("No such data");
+			else
+				data = memory.getData(memLocation);
+			for (int i = 0; i < caches.size(); i++) {
+				caches.get(i).cacheTheDataAtMemoryLocation(memLocation);
+			}
 		} else {
 			// found in cache index;
-			data = caches.get(cacheIndex).loadDataFromCache(dataIndex,
-					memLocation);
+			if (memory.getData(memLocation) == null)
+				System.out.println("No such data");
+			else
+				data = caches.get(cacheIndex).loadDataFromCache(dataIndex,
+						memLocation);
 			for (int i = 0; i < cacheIndex; i++) {
 				caches.get(i).cacheTheDataAtMemoryLocation(memLocation);
 			}
@@ -213,5 +233,9 @@ public class Engine {
 	public void writeData(short valueAt, short s) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public Memory getMemory() {
+		return this.memory;
 	}
 }

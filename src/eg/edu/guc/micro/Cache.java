@@ -1,8 +1,11 @@
 package eg.edu.guc.micro;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Cache {
@@ -24,15 +27,21 @@ public class Cache {
 								// addresses in memory are 5,6,7,8 )
 
 	// Data cache
-	private HashMap<Integer, Short>[] data; // array index is cache address,
-											// hashmap key is memory address
-											// of cached data, hashmap value
-											// is data value(ex: if block
-											// size is 4 then each hashmap
-											// must have 4 entries w ykoono
-											// wara ba3d fel memory)
+	private LinkedHashMap<Integer, Short>[] data; // array index is cache
+													// address,
+													// hashmap key is memory
+													// address
+													// of cached data, hashmap
+													// value
+													// is data value(ex: if
+													// block
+													// size is 4 then each
+													// hashmap
+													// must have 4 entries w
+													// ykoono
+													// wara ba3d fel memory)
 
-	private boolean[] dataFlags;
+	private boolean[] blocksFlags;
 	private int noOfAccesses = 0;
 	private int noOfMisses = 0;
 
@@ -50,10 +59,11 @@ public class Cache {
 		this.noOfCycles = noOfCycles;
 		this.sets = (size / blockSize) / associativity;
 		this.instruction = new int[size / blockSize];
-		this.data = new HashMap[size / blockSize];
+		this.data = new LinkedHashMap[size / blockSize];
 		Arrays.fill(instruction, -1);
-		this.dataFlags = new boolean[size / blockSize];
-
+		this.blocksFlags = new boolean[size];
+		for (int i = 0; i < data.length; i++)
+			data[i] = new LinkedHashMap<Integer, Short>();
 	}
 
 	public boolean existsInstructionAtMemoryLocation(int location) {
@@ -97,30 +107,36 @@ public class Cache {
 		}
 	}
 
-	public void cacheTheDataAtMemoryLocation(int location) {
-		// TODO mimi
-		// put the data having memory location (int location) in its
-		// appropriate place in this cache
-		// Note that you will cache a whole block not this data only, so handle
-		// this according to block size
+	public void cacheTheDataAtMemoryLocation(int location)
+			throws NumberFormatException, IOException {
 		int setIndex = getCacheEntryIndex(location);
 		int start = setIndex * associativity;
 		int end = (setIndex + 1) * associativity;
-		boolean wasPut = false;
-		for (int i = start; i < end; i++) {
-			if (!dataFlags[i]) {
-				this.data[i].put(location, Memory.getData(location));
-				dataFlags[i] = true;
-				wasPut = true;
+		boolean cached = false;
+		for (int i = start; i <= end; i++) {
+			if (!blocksFlags[i]) {
+				// found empty block
+				int startAddress = location - (location % blockSize);
+				for (int j = 0; j < blockSize; j++) {
+					this.data[i].put(startAddress, Engine.getInstance()
+							.getMemory().getData(startAddress));
+					startAddress++;
+				}
+				// Copy entry
+				blocksFlags[i] = true;
+				cached = true;
+				break;
 			}
 		}
-		if (!wasPut) {
-			for (int i = start; i < end; i++) {
-				if (location < 64) {
-					this.data[i].put(location, Memory.getData(location));
-					dataFlags[i] = true;
-					location++;
-				}
+		// System.out.println(Arrays.toString(this.data));
+		if (!cached) {
+			int startAddress = location - (location % blockSize);
+			this.data[start].clear();
+			for (int j = 0; j < blockSize; j++) {
+				this.data[start].put(startAddress, Engine.getInstance()
+						.getMemory().getData(startAddress));
+				startAddress++;
+				blocksFlags[start] = true;
 			}
 		}
 	}
@@ -131,17 +147,28 @@ public class Cache {
 	}
 
 	public void printCache() {
-		System.out.println("Set numbers " + sets);
-		for (int i = 0; i < this.data.length; i++) {
-			System.out.println("Entry " + i);
-			Iterator it = this.data[i].entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry pairs = (Map.Entry) it.next();
-				System.out.println(pairs.getKey() + " = " + pairs.getValue());
-				it.remove(); // avoids a ConcurrentModificationException
+		int blocks = 0;
+		int entries = 0;
+		for (int i = 0; i < sets; i++) {
+			System.out.println("Set " + i);
+			for (int j = 0; j < associativity; j++) {
+				System.out.println(" Block " + blocks);
+				Iterator it = this.data[blocks].entrySet().iterator();
+				for (int k = 0; k < blockSize; k++) {
+					while (it.hasNext()) {
+						System.out.println("  Entry " + entries);
+						Map.Entry pairs = (Map.Entry) it.next();
+						System.out.println("   data of " + pairs.getKey()
+								+ " = " + pairs.getValue() + " ");
+						it.remove();
+						entries++;
+
+					}
+
+				}
+				blocks++;
 			}
 		}
-		System.out.println();
 	}
 
 	public int getNoOfCycles() {
