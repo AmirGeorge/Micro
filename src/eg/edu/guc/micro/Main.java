@@ -6,6 +6,13 @@ public class Main {
 
 	public static void main(String[] args) throws NumberFormatException,
 			IOException {
+
+		// Parser parser = Parser.getInstance();
+		// ArrayList<Instruction> ss = parser
+		// .parse(" AsSD:  \nbeq $r1, $r1, AsSD");
+		// System.out.println(parser.getLabels().toString());
+		// System.out.println(parser.getNoLines());
+
 		// System.out.println(8%8);
 		// Engine x = Engine.getInstance();
 		Engine.getInstance().loadDataFromCaches(0);
@@ -21,6 +28,6 @@ public class Main {
 		for (Cache c : Engine.getInstance().getCaches())
 			c.printCache();
 		// x.run();
-	}
 
+	}
 }

@@ -13,6 +13,7 @@ public class Engine {
 
 	private static Engine _instance;
 
+	private Parser parser;
 	private Memory memory;
 	private LinkedList<Cache> caches;
 	private ArrayList<Instruction> instructions;
@@ -36,6 +37,7 @@ public class Engine {
 	}
 
 	private void init() throws NumberFormatException, IOException {
+		parser = Parser.getInstance();
 		caches = new LinkedList<Cache>();
 		caches.add(new Cache(16, 2, 1, 10, WritingPolicyHit.WRITE_BACK,
 				WritingPolicyMiss.WRITE_ALLOCATE, 5));
@@ -69,7 +71,7 @@ public class Engine {
 		String line;
 		System.out.println("Enter instructions, followed by END in a new line");
 		while (!(line = bfr.readLine()).equals("END")) {
-			instructions.add(Parser.getInstance().parse(line));
+			instructions = Parser.getInstance().parse(line);
 		}
 	}
 
