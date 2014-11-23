@@ -9,6 +9,7 @@ public class Instruction {
 	private String regB;
 	private String regC;
 	private short imm;
+	private int label;
 
 	public Instruction() {
 
@@ -114,5 +115,26 @@ public class Instruction {
 
 	public void setRegC(String regC) {
 		this.regC = regC;
+	}
+
+	public int getLabel() {
+		return label;
+	}
+
+	public void setLabel(int label) {
+		this.label = label;
+	}
+
+	public String toString() {
+		String instruction = "Instruction name : " + getInstructionName();
+		instruction += "\nReg A : " + getRegA();
+		if (getRegB() != null)
+			instruction += "\nReg B : " + getRegB();
+		if (getRegC() != null)
+			instruction += "\nReg C : " + getRegC();
+		instruction += "\nImmediate : " + getImm();
+		instruction += "\nType : " + getType();
+		instruction += "\nLabel : " + getLabel();
+		return instruction;
 	}
 }
