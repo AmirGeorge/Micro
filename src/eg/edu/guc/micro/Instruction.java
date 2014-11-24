@@ -22,10 +22,12 @@ public class Instruction {
 			if (instructionName.equals("LW")) {
 				regFile.setValueAt(
 						regA,
-						eng.loadDataFromCaches((short) (regFile
-								.getValueAt(regB)) + imm));
+						eng.loadDataFromCaches(
+								(short) (regFile.getValueAt(regB)) + imm, 0));
 			} else if (instructionName.equals("SW")) {
-				eng.writeData(0,regFile.getValueAt(regA),
+				System.out.println("adddddddddddddddddddddddddddddddd  "
+						+ (short) (regFile.getValueAt(regB) + imm));
+				eng.writeData(0, regFile.getValueAt(regA),
 						(short) (regFile.getValueAt(regB) + imm));
 			}
 		} else if (type == InstructionType.CONTROL) {

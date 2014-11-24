@@ -14,16 +14,19 @@ public class Main {
 		if (parser
 				.parse("addi $R1, $r2, 10 \n addi $R2, $r2, 20  \n sub $R2, $R2, $R1 \n beq $R1, $R2, end \n addi $r5, $r6,5 \n end: \n sw $R2, $R2, 40") != null) {
 			Engine x = Engine.getInstance();
+			x.getInstance().getMemory().setAccessTime(130);
+			System.out.println("before    location 110      "
+					+ x.getMemory().getData(50));
 			x.getMemory().setData(20, (short) 2);
 			x.run();
 			for (Cache c : Engine.getInstance().getCaches()) {
 				System.out.println(Arrays.toString(c.getInstructions()));
 				c.printCache();
 			}
+			System.out.println("aafter " + x.getMemory().getData(50));
 		}
 		// System.out.println(parser.getLabels().toString());
 		// System.out.println(parser.getNoLines());
-
 		// System.out.println(8%8);
 		// Engine x = Engine.getInstance();
 		// Engine.getInstance().loadDataFromCaches(0);

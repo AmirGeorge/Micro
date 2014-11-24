@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class Cache {
 
+	// in write policies mynf3sh back w around, y
 	private int size;
 	private int blockSize;
 	private int associativity;
@@ -16,6 +17,7 @@ public class Cache {
 	private WritingPolicyMiss writingPolicyMiss;
 	private int noOfCycles;
 	private int sets;
+	private int index;
 
 	// Instruction cache
 	private int[] instruction; // array index is cache address, array element is
@@ -46,13 +48,12 @@ public class Cache {
 
 	// private HashMap<Integer, CacheEntry> cacheEntries;
 
-	public Cache(int size, int blockSize, int associativity, int hitTime,
+	public Cache(int size, int blockSize, int associativity,
 			WritingPolicyHit writingPolicyHit,
-			WritingPolicyMiss writingPolicyMiss, int noOfCycles) {
+			WritingPolicyMiss writingPolicyMiss, int noOfCycles, int index) {
 		this.size = size;
 		this.blockSize = blockSize;
 		this.associativity = associativity;
-		this.hitTime = hitTime;
 		this.writingPolicyHit = writingPolicyHit;
 		this.writingPolicyMiss = writingPolicyMiss;
 		this.noOfCycles = noOfCycles;
@@ -62,6 +63,7 @@ public class Cache {
 		Arrays.fill(instruction, -1);
 		this.blocksFlags = new boolean[size / blockSize];
 		this.dirtyFlags = new boolean[size / blockSize];
+		this.index = index;
 		for (int i = 0; i < data.length; i++)
 			data[i] = new LinkedHashMap<Integer, Short>();
 	}
@@ -70,10 +72,11 @@ public class Cache {
 		int blockNumber = location / blockSize;
 		int setIndex = blockNumber % sets;
 		int instCapacity = blockSize / 2;
+		int startAddress = location - (location % blockSize);
 		for (int index = setIndex * associativity; index < (setIndex + 1)
 				* associativity; index++) {
-			if (instruction[index] != -1 && location >= instruction[index]
-					&& instruction[index] + (instCapacity) - 1 >= location)
+			if (instruction[index] != -1 && startAddress >= instruction[index]
+					&& instruction[index] + (instCapacity) - 1 >= startAddress)
 				return true;
 		}
 		return false;
@@ -95,58 +98,71 @@ public class Cache {
 		int blockNumber = location / blockSize;
 		int setIndex = blockNumber % sets;
 		boolean cached = false;
+		int startAddress = location - (location % blockSize);
+		System.out.println("Start adress = " + startAddress);
 		for (int index = setIndex * associativity; index < (setIndex + 1)
 				* associativity; index++) {
 			if (instruction[index] == -1 && !cached) {
 				cached = true;
-				instruction[index] = location;
+				instruction[index] = startAddress;
+				System.out.println("index =" + index);
+				break;
 			}
-			if (!cached) {
-				instruction[setIndex * associativity] = location;
-			}
+		}
+		if (!cached) {
+			instruction[setIndex * associativity] = startAddress;
 		}
 	}
 
 	public void cacheTheDataAtMemoryLocation(int location, short newData)
 			throws NumberFormatException, IOException {
-		int setIndex = getCacheEntryIndex(location);
-		int start = setIndex * associativity;
-		int end = (setIndex + 1) * associativity;
-		boolean cached = false;
-		for (int i = start; i <= end; i++) {
-			if (!blocksFlags[i]) {
+		if (existsDataAtMemoryLocation(location) == -1) {
+			int setIndex = getCacheEntryIndex(location);
+			int start = setIndex * associativity;
+			int end = (setIndex + 1) * associativity;
+			System.out.println("indexxxxxxxxxxxxxxxxxxxx " + this.index);
+			boolean cached = false;
+			for (int i = start; i <= end; i++) {
+				if (!blocksFlags[i]) {
+					int startAddress = location - (location % blockSize);
+					for (int j = 0; j < blockSize; j++) {
+						if (newData != Short.MIN_VALUE) {
+							this.data[i].put(startAddress, newData);
+						} else {
+							this.data[i].put(startAddress, Engine.getInstance()
+									.getMemory().getData(startAddress));
+						}
+						startAddress++;
+					}
+					blocksFlags[i] = true;
+					cached = true;
+					break;
+				}
+			}
+			if (!cached) {
 				int startAddress = location - (location % blockSize);
+				if (dirtyFlags[start]) {
+					// WRITE IN memory before replace
+					if (index == Engine.getInstance().getCaches().size())
+						for (int key : data[start].keySet()) {
+							Engine.getInstance().getMemory()
+									.setData(key, data[start].get(key));
+						}
+					else {
+						Engine.getInstance().writeData(this.index + 1, newData,
+								location);
+					}
+				}
+				this.data[start].clear();
 				for (int j = 0; j < blockSize; j++) {
 					if (newData != Short.MIN_VALUE)
-						this.data[i].put(startAddress, newData);
+						this.data[start].put(startAddress, newData);
 					else
-						this.data[i].put(startAddress, Engine.getInstance()
+						this.data[start].put(startAddress, Engine.getInstance()
 								.getMemory().getData(startAddress));
 					startAddress++;
+					blocksFlags[start] = true;
 				}
-				blocksFlags[i] = true;
-				cached = true;
-				break;
-			}
-		}
-		if (!cached) {
-			int startAddress = location - (location % blockSize);
-			if (dirtyFlags[start]) {
-				// WRITE IN memory before replace
-				for (int key : data[start].keySet()) {
-					Engine.getInstance().getMemory()
-							.setData(key, data[start].get(key));
-				}
-			}
-			this.data[start].clear();
-			for (int j = 0; j < blockSize; j++) {
-				if (newData != Short.MIN_VALUE)
-					this.data[start].put(startAddress, newData);
-				else
-					this.data[start].put(startAddress, Engine.getInstance()
-							.getMemory().getData(startAddress));
-				startAddress++;
-				blocksFlags[start] = true;
 			}
 		}
 	}
@@ -157,6 +173,9 @@ public class Cache {
 	}
 
 	public void printCache() {
+		System.out.println("Access" + noOfAccesses);
+		System.out.println("Misses" + noOfMisses);
+		System.out.println("Hit Ratio " + getHitRatio());
 		int blocks = 0;
 		int entries = 0;
 		for (int i = 0; i < sets; i++) {
@@ -222,7 +241,15 @@ public class Cache {
 
 	}
 
+	public double getHitRatio() {
+		return (noOfAccesses - noOfMisses + 0.0) / noOfAccesses;
+	}
+
 	public int[] getInstructions() {
 		return instruction;
+	}
+
+	public boolean[] getDirtyFlags() {
+		return this.dirtyFlags;
 	}
 }

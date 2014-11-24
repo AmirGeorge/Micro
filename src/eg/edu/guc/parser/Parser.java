@@ -25,6 +25,7 @@ public class Parser {
 	// else return null
 	public ArrayList<Instruction> parse(String submittedCode)
 			throws NumberFormatException, IOException {
+//		submittedCode += "\n END";
 		ArrayList<Instruction> parsedCode = new ArrayList<Instruction>();
 		// for labels
 
