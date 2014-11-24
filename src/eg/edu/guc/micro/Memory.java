@@ -1,12 +1,7 @@
 package eg.edu.guc.micro;
 
-import java.util.Arrays;
-
 public class Memory {
-	private static final int MEMORY_SIZE = 64 * 1024;
 	private static Short data[];
-	private int instructionsPointer;
-	private int dataPointer;
 	private int accessTime;
 
 	public Memory(int accessTime) {
@@ -27,7 +22,6 @@ public class Memory {
 	}
 
 	// consider empty value by Short.minValue
-
 
 	public Short getData(int location) {
 		if (data[location] == null)

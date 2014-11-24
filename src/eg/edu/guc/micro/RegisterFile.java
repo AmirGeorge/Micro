@@ -37,4 +37,8 @@ public class RegisterFile {
 		}
 	}
 
+	public HashMap<String, Short> getRegFile() {
+		return regFile;
+	}
+
 }

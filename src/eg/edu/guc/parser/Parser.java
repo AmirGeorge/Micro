@@ -26,6 +26,18 @@ public class Parser {
 	public ArrayList<Instruction> parse(String submittedCode)
 			throws NumberFormatException, IOException {
 		ArrayList<Instruction> parsedCode = new ArrayList<Instruction>();
+		// for labels
+
+		String[] temp = submittedCode.split("\n");
+		for (int i = 0; i < temp.length; i++) {
+			if (temp[i].matches(Regex._instructions[7])) {
+				ArrayList<String> tem = new ArrayList<String>();
+				splitter(temp[i], tem);
+				labels.put(tem.get(0).toLowerCase(), String.valueOf(i));
+				i++;
+			}
+		}
+
 		for (String instruction : submittedCode.split("\n")) {
 			Object newInstruction = instructionSyntax(instruction);
 			lineNumber++;
@@ -193,7 +205,7 @@ public class Parser {
 		case "beq":
 			regA(instruction, codeLine.get(1));
 			regB(instruction, codeLine.get(2));
-			if (!codeLine.get(3).matches(Regex.LABELJUMP.value()))
+			if (codeLine.get(3).matches(Regex.IMMEDIATE.value()))
 				immediate(instruction, codeLine.get(3));
 			else {
 				if (labels.containsKey(codeLine.get(3).toLowerCase()))

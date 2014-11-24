@@ -42,10 +42,10 @@ public class Engine {
 			System.out.println(ins);
 		}
 		caches = new LinkedList<Cache>();
-		caches.add(new Cache(16, 2, 1, 10, WritingPolicyHit.WRITE_BACK,
+		caches.add(new Cache(8, 2, 1, 10, WritingPolicyHit.WRITE_BACK,
 				WritingPolicyMiss.WRITE_ALLOCATE, 5));
-		// caches.add(new Cache(16, 2, 2, 10, WritingPolicyHit.WRITE_BACK,
-		// WritingPolicyMiss.WRITE_ALLOCATE, 5));
+		caches.add(new Cache(16, 2, 2, 10, WritingPolicyHit.WRITE_BACK,
+				WritingPolicyMiss.WRITE_ALLOCATE, 5));
 		// caches.add(new Cache(16, 1, 1, 10, WritingPolicyHit.WRITE_BACK,
 		// WritingPolicyMiss.WRITE_ALLOCATE, 5));
 		// TODO test
@@ -88,13 +88,12 @@ public class Engine {
 	}
 
 	public void run() throws NumberFormatException, IOException {
-		// int instructionLatency;
-		// int dataLatency;
 		int previousPC = pc;
 		// TODO test
 		while ((pc - instructionsStartingAddress) / 2 < instructions.size()) {
 			getInstructionFromCaches(pc);
-			instructions.get(pc - instructionsStartingAddress).execute();
+			instructions.get((pc - instructionsStartingAddress) / 2).execute();
+
 			numberOfExecutedInstructions++;
 			if (pc == previousPC) { // no branch or jump occured
 				pc += 2;// each instruction occupies 2 places in memory
@@ -103,14 +102,11 @@ public class Engine {
 				previousPC = pc;
 			}
 		}
-		for (int i = 0; i < instructions.size(); i++) {
-			getInstructionFromCaches(instructionsStartingAddress + (i * 2));
-			instructions.get(i).execute();
-			numberOfExecutedInstructions++;
-		}
+		System.out.println(numberOfExecutedInstructions);
+		System.out.println(RegisterFile.getInstance().getRegFile());
 	}
 
-	private short getInstructionFromCaches(int location) {
+	private void getInstructionFromCaches(int location) {
 		int index = caches.size();
 		for (int c = 0; c < caches.size(); c++) {
 			if (caches.get(c).existsInstructionAtMemoryLocation(location)) {
@@ -120,7 +116,6 @@ public class Engine {
 						caches.get(c).getNoOfAccesses() + 1);
 				break;
 			}
-
 		}
 		for (int up = index - 1; up >= 0; up--) {
 			caches.get(up).cacheTheInstructionAtMemoryLocation(location);
@@ -128,7 +123,6 @@ public class Engine {
 					.setNoOfAccesses(caches.get(up).getNoOfAccesses() + 1);
 			caches.get(up).setNoOfMisses(caches.get(up).getNoOfMisses() + 1);
 		}
-		return memory.getData(location);
 	}
 
 	public short loadDataFromCaches(int memLocation)

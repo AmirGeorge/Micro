@@ -1,10 +1,7 @@
 package eg.edu.guc.micro;
 
 import java.io.IOException;
-import java.io.ObjectInputStream.GetField;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -223,5 +220,9 @@ public class Cache {
 	public void cachData(short newValue, int memLocation) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public int[] getInstructions() {
+		return instruction;
 	}
 }
