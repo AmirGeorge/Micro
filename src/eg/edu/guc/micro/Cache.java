@@ -70,7 +70,7 @@ public class Cache {
 		int blockNumber = location / blockSize;
 		int setIndex = blockNumber % sets;
 		int instCapacity = blockSize / 2;
-		for (int index = setIndex * associativity; index <= (setIndex + 1)
+		for (int index = setIndex * associativity; index < (setIndex + 1)
 				* associativity; index++) {
 			if (instruction[index] != -1 && location >= instruction[index]
 					&& instruction[index] + (instCapacity) - 1 >= location)
@@ -95,7 +95,7 @@ public class Cache {
 		int blockNumber = location / blockSize;
 		int setIndex = blockNumber % sets;
 		boolean cached = false;
-		for (int index = setIndex * associativity; index <= (setIndex + 1)
+		for (int index = setIndex * associativity; index < (setIndex + 1)
 				* associativity; index++) {
 			if (instruction[index] == -1 && !cached) {
 				cached = true;

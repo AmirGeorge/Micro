@@ -38,6 +38,8 @@ public class Parser {
 			}
 		}
 
+		System.out.println(labels);
+
 		for (String instruction : submittedCode.split("\n")) {
 			Object newInstruction = instructionSyntax(instruction);
 			lineNumber++;

@@ -12,7 +12,7 @@ public class Main {
 		//
 		Parser parser = Parser.getInstance();
 		if (parser
-				.parse("addi $R1, $r2, 10 \n addi $R2, $r2, 20  \n sub $R2, $R2, $R1 \n beq $R1, $R2, end \n addi $r5, $r6,5 \n sw $R2, $R2, 40 \n end:") != null) {
+				.parse("addi $R1, $r2, 10 \n addi $R2, $r2, 20  \n sub $R2, $R2, $R1 \n beq $R1, $R2, end \n addi $r5, $r6,5 \n end: \n sw $R2, $R2, 40") != null) {
 			Engine x = Engine.getInstance();
 			x.getMemory().setData(20, (short) 2);
 			x.run();
