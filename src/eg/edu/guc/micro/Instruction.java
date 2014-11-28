@@ -20,13 +20,17 @@ public class Instruction {
 		if (type == InstructionType.MEMORY_ACCESS) {
 			Engine eng = Engine.getInstance();
 			if (instructionName.equals("LW")) {
+				System.out.println(regFile.getRegFile());
+
 				regFile.setValueAt(
 						regA,
 						eng.loadDataFromCaches(
 								(short) (regFile.getValueAt(regB)) + imm, 0));
+				System.out.println("knasdjsaidsaduisaodhisa");
+				System.out.println(regFile.getRegFile());
 			} else if (instructionName.equals("SW")) {
-				System.out.println("adddddddddddddddddddddddddddddddd  "
-						+ (short) (regFile.getValueAt(regB) + imm));
+				// System.out.println("adddddddddddddddddddddddddddddddd  "
+				// + (short) (regFile.getValueAt(regB) + imm));
 				eng.writeData(0, regFile.getValueAt(regA),
 						(short) (regFile.getValueAt(regB) + imm));
 			}
