@@ -21,6 +21,7 @@ public class Engine {
 	private int numberOfExecutedInstructions = 0;
 	private int numberOfCycles = 0;
 	private int instructionsStartingAddress;
+	private StringBuilder sb;
 
 	private Engine() {
 
@@ -52,6 +53,7 @@ public class Engine {
 		// WritingPolicyMiss.WRITE_ALLOCATE, 43, 2));
 		// // TODO test
 		memory = new Memory();
+		sb = new StringBuilder();
 		// memory.setData(0, (short) 10);
 		// memory.setData(1, (short) 20);
 		// memory.setData(100, (short) 100);
@@ -313,6 +315,14 @@ public class Engine {
 
 	public int getAMAT() {
 		return this.numberOfCycles;
+	}
+
+	public StringBuilder getSb() {
+		return sb;
+	}
+
+	public void AppendTOSb(String s) {
+		sb.append(s);
 	}
 
 }
