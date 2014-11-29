@@ -99,13 +99,11 @@ public class Cache {
 		int setIndex = blockNumber % sets;
 		boolean cached = false;
 		int startAddress = location - (location % blockSize);
-		System.out.println("Start adress = " + startAddress);
 		for (int index = setIndex * associativity; index < (setIndex + 1)
 				* associativity; index++) {
 			if (instruction[index] == -1 && !cached) {
 				cached = true;
 				instruction[index] = startAddress;
-				System.out.println("index =" + index);
 				break;
 			}
 		}
@@ -120,7 +118,6 @@ public class Cache {
 			int setIndex = getCacheEntryIndex(location);
 			int start = setIndex * associativity;
 			int end = (setIndex + 1) * associativity;
-			System.out.println("indexxxxxxxxxxxxxxxxxxxx " + this.index);
 			boolean cached = false;
 			for (int i = start; i <= end; i++) {
 				if (!blocksFlags[i]) {
@@ -173,6 +170,7 @@ public class Cache {
 	}
 
 	public void printCache() {
+		System.out.println("Data Cache");
 		System.out.println("Access" + noOfAccesses);
 		System.out.println("Misses" + noOfMisses);
 		System.out.println("Hit Ratio " + getHitRatio());
@@ -198,6 +196,8 @@ public class Cache {
 				blocks++;
 			}
 		}
+		System.out.println("====================");
+
 	}
 
 	public int getNoOfCycles() {

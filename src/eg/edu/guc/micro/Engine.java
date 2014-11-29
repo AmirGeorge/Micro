@@ -44,10 +44,10 @@ public class Engine {
 			System.out.println(ins);
 		}
 		caches = new LinkedList<Cache>();
-		caches.add(new Cache(8, 2, 1, WritingPolicyHit.WRITE_THROUGH,
-				WritingPolicyMiss.WRITE_AROUND, 1, 0));
-		caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
-				WritingPolicyMiss.WRITE_AROUND, 2, 1));
+		caches.add(new Cache(8, 2, 1, WritingPolicyHit.WRITE_BACK,
+				WritingPolicyMiss.WRITE_ALLOCATE, 1, 0));
+//		caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
+//				WritingPolicyMiss.WRITE_AROUND, 2, 1));
 		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_BACK,
 		// WritingPolicyMiss.WRITE_ALLOCATE, 20, 1));
 		// caches.add(new Cache(32, 4, 2, WritingPolicyHit.WRITE_BACK,
@@ -108,7 +108,7 @@ public class Engine {
 		// }
 		// }
 		System.out.println(numberOfExecutedInstructions);
-		System.out.println("Number of cycels " + numberOfCycles);
+		System.out.println("AMAT (Number of cycels) " + numberOfCycles);
 
 	}
 
