@@ -1,6 +1,5 @@
 package eg.edu.guc.micro;
 
-import java.util.Arrays;
 
 public class Memory {
 	private static short data[];

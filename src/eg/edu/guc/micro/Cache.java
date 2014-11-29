@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class Cache {
 
-	// in write policies mynf3sh back w around, y
+	// in write policies mynf3sh back w around
 	private int size;
 	private int blockSize;
 	private int associativity;

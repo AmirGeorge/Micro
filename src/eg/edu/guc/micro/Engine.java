@@ -1,11 +1,9 @@
 package eg.edu.guc.micro;
 
-import java.awt.font.NumericShaper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 
@@ -23,6 +21,7 @@ public class Engine {
 	private int numberOfExecutedInstructions = 0;
 	private int numberOfCycles = 0;
 	private int instructionsStartingAddress;
+	private StringBuilder sb;
 
 	private Engine() {
 
@@ -46,14 +45,17 @@ public class Engine {
 		caches = new LinkedList<Cache>();
 		caches.add(new Cache(8, 2, 1, WritingPolicyHit.WRITE_BACK,
 				WritingPolicyMiss.WRITE_ALLOCATE, 1, 0));
-//		caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
-//				WritingPolicyMiss.WRITE_AROUND, 2, 1));
+		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
+		// WritingPolicyMiss.WRITE_AROUND, 2, 1));
+		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
+		// WritingPolicyMiss.WRITE_AROUND, 2, 1));
 		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_BACK,
 		// WritingPolicyMiss.WRITE_ALLOCATE, 20, 1));
 		// caches.add(new Cache(32, 4, 2, WritingPolicyHit.WRITE_BACK,
 		// WritingPolicyMiss.WRITE_ALLOCATE, 43, 2));
 		// // TODO test
 		memory = new Memory();
+		sb = new StringBuilder();
 		// memory.setData(0, (short) 10);
 		// memory.setData(1, (short) 20);
 		// memory.setData(100, (short) 100);
@@ -315,6 +317,14 @@ public class Engine {
 
 	public int getAMAT() {
 		return this.numberOfCycles;
+	}
+
+	public StringBuilder getSb() {
+		return sb;
+	}
+
+	public void AppendTOSb(String s) {
+		sb.append(s);
 	}
 
 }
