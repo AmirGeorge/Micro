@@ -111,7 +111,6 @@ public class Engine {
 		// }
 		System.out.println(numberOfExecutedInstructions);
 		System.out.println("AMAT (Number of cycels) " + numberOfCycles);
-
 	}
 
 	private void getInstructionFromCaches(int location) {
