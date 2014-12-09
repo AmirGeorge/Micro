@@ -36,6 +36,8 @@ public class ReservationStation {
 			rs[index].put("Qk", "");
 			rs[index].put("Dest", "");
 			rs[index].put("A", "");
+			rs[index].put("State", "NONE");
+			rs[index].put("ExecCyclesLeft", "");
 			index++;
 		}
 
@@ -50,6 +52,8 @@ public class ReservationStation {
 			rs[index].put("Qk", "");
 			rs[index].put("Dest", "");
 			rs[index].put("A", "");
+			rs[index].put("State", "NONE");
+			rs[index].put("ExecCyclesLeft", "");
 			index++;
 		}
 		for (int i = 0; i < numberOfMultiply; i++) {
@@ -63,6 +67,8 @@ public class ReservationStation {
 			rs[index].put("Qk", "");
 			rs[index].put("Dest", "");
 			rs[index].put("A", "");
+			rs[index].put("State", "NONE");
+			rs[index].put("ExecCyclesLeft", "");
 			index++;
 		}
 
@@ -77,6 +83,8 @@ public class ReservationStation {
 			rs[index].put("Qk", "");
 			rs[index].put("Dest", "");
 			rs[index].put("A", "");
+			rs[index].put("State", "NONE");
+			rs[index].put("ExecCyclesLeft", "");
 			index++;
 		}
 
@@ -91,6 +99,8 @@ public class ReservationStation {
 			rs[index].put("Qk", "");
 			rs[index].put("Dest", "");
 			rs[index].put("A", "");
+			rs[index].put("State", "NONE");
+			rs[index].put("ExecCyclesLeft", "");
 			index++;
 		}
 	}
@@ -168,7 +178,8 @@ public class ReservationStation {
 	}
 
 	public void updateRSentry(String instrIndex, String busy, String vj,
-			String vk, String qj, String qk, String dest, String a) {
+			String vk, String qj, String qk, String dest, String a,
+			String state, String execCyclesLeft) {
 		for (int i = 0; i < rs.length; i++) {
 			if (rs[i].get("InstrcutionIndex").equals(instrIndex + "")) {
 				if (busy != null) {
@@ -191,6 +202,12 @@ public class ReservationStation {
 				}
 				if (a != null) {
 					rs[i].put("A", a);
+				}
+				if (state != null) {
+					rs[i].put("State", state);
+				}
+				if (execCyclesLeft != null) {
+					rs[i].put("ExecCyclesLeft", execCyclesLeft);
 				}
 				break;
 			}
