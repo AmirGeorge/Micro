@@ -46,3 +46,7 @@ prediction will be according to offset as described in the pdf)
 9) What happens exactly before flush ?
 - I discover in the execute stage of my branch instruction that my branch prediction was incorrect so I I flush the ROB entries from this branch instruction 
 until just before the head.
+
+10) What should happen with the data caches ?
+- For the write and commit instructions, they will take 1 cycle in all instructions except for the store instruction, which spends the latency it takes in the memory hierarchy (Data Cache) during the write stage.
+For the load instructions you take into account the data cache during the execute stage normally.
