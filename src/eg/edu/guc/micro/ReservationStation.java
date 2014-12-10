@@ -9,6 +9,9 @@ public class ReservationStation {
 	// Mul (multiply and divide)
 	// Add (add, sub, jump, beq)
 	// Logic (logical operations)
+
+	private static ReservationStation _instance;
+
 	HashMap<String, String>[] rs; // array of hashmaps, rob entry is hashmap
 	private int numberOfLoads;
 	private int numberOfStores;
@@ -16,8 +19,19 @@ public class ReservationStation {
 	private int numberOfAdd;
 	private int numberOfLogic;
 
+	public static ReservationStation getInstance() {
+		if (_instance == null) {
+			_instance = new ReservationStation();
+		}
+		return _instance;
+	}
+
+	private ReservationStation() {
+
+	}
+
 	@SuppressWarnings("unchecked")
-	public ReservationStation(int numberOfLoads, int numberOfStores,
+	public void init(int numberOfLoads, int numberOfStores,
 			int numberOfMultiply, int numberOfAdd, int numberOfLogic) {
 		rs = new HashMap[numberOfLoads + numberOfStores + numberOfMultiply
 				+ numberOfAdd + numberOfLogic];

@@ -3,12 +3,26 @@ package eg.edu.guc.micro;
 import java.util.HashMap;
 
 public class ROB {
+
+	private static ROB _instance;
+
+	public static ROB getInstance() {
+		if (_instance == null) {
+			_instance = new ROB();
+		}
+		return _instance;
+	}
+
+	private ROB() {
+
+	}
+
 	HashMap<String, String>[] table;
 	int headIndex = 0;
 	int tailIndex = 0;
 
 	@SuppressWarnings("unchecked")
-	public ROB(int size) {
+	public void init(int size) {
 		table = new HashMap[size];
 		for (int i = 0; i < table.length; i++) {
 			table[i] = new HashMap<String, String>();

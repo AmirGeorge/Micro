@@ -119,10 +119,10 @@ public class Window extends JFrame {
 		tabbedPane_caches.addTab("Memory", null, scrollPane_memory, null);
 
 		// TODO fix, gives java heap size error in designer
-		// Integer[][] values = new Integer[1024 * 64][2];
-		// String[] columns2 = { "Address", "Data" };
-		// table_memory = new JTable(values, columns2);
-		table_memory = new JTable();
+		Integer[][] values = new Integer[1024 * 64][2];
+		String[] columns2 = { "Address", "Data" };
+		table_memory = new JTable(values, columns2);
+		// table_memory = new JTable();
 		scrollPane_memory.setViewportView(table_memory);
 
 		initRunButton();

@@ -23,6 +23,12 @@ public class Engine {
 	private int instructionsStartingAddress;
 	private StringBuilder sb;
 
+	private int loadLatency;
+	private int storeLatency;
+	private int mulLatency;
+	private int addLatency;
+	private int logicLatency;
+
 	private Engine() {
 
 	}
@@ -255,11 +261,10 @@ public class Engine {
 		}
 	}
 
-	public void readCacheInputs(String hierarchy) throws NumberFormatException,
-			IOException {
+	public void readCacheInputs(String hierarchy) throws IOException {
 		StringTokenizer tkn = new StringTokenizer(hierarchy);
 		// start addres
-		this.instructionsStartingAddress = Integer.parseInt(tkn.nextToken());
+		setInstructionsStartingAddress(Integer.parseInt(tkn.nextToken()));
 		// Memoery Access Time
 		// System.out.println("Enter the Memory access time");
 		int hitTimeMemory = Integer.parseInt(tkn.nextToken());
@@ -288,6 +293,35 @@ public class Engine {
 			// caches.get(i - 1).printCache();
 		}
 
+	}
+
+	public void readHardwareInputs(String hardware) {
+		int pipelineWidth;
+		int instrBufferSize = 0;
+		int numberOfLoads = 0;
+		int numberOfStores = 0;
+		int numberOfMultiply = 0;
+		int numberOfAdd = 0;
+		int numberOfLogic = 0;
+		int robSize = 0;
+		// Following are latencies of execute stage
+		// Assumption: the data cache execute stage will be this input + latency
+		// of data cache access
+		int loadLatency = 0;
+		int storeLatency = 0;
+		int mulLatency = 0;
+		int addLatency = 0;
+		int logicLatency = 0;
+		// TODO get all the above from GUI
+		setLoadLatency(loadLatency);
+		setStoreLatency(storeLatency);
+		setMulLatency(mulLatency);
+		setAddLatency(addLatency);
+		setLogicLatency(logicLatency);
+		InstructionBuffer.getInstance().init(instrBufferSize);
+		ReservationStation.getInstance().init(numberOfLoads, numberOfStores,
+				numberOfMultiply, numberOfAdd, numberOfLogic);
+		ROB.getInstance().init(robSize);
 	}
 
 	public void displayMemory() {
@@ -344,6 +378,46 @@ public class Engine {
 
 	public void AppendTOSb(String s) {
 		sb.append(s);
+	}
+
+	public int getLoadLatency() {
+		return loadLatency;
+	}
+
+	public void setLoadLatency(int loadLatency) {
+		this.loadLatency = loadLatency;
+	}
+
+	public int getStoreLatency() {
+		return storeLatency;
+	}
+
+	public void setStoreLatency(int storeLatency) {
+		this.storeLatency = storeLatency;
+	}
+
+	public int getMulLatency() {
+		return mulLatency;
+	}
+
+	public void setMulLatency(int mulLatency) {
+		this.mulLatency = mulLatency;
+	}
+
+	public int getAddLatency() {
+		return addLatency;
+	}
+
+	public void setAddLatency(int addLatency) {
+		this.addLatency = addLatency;
+	}
+
+	public int getLogicLatency() {
+		return logicLatency;
+	}
+
+	public void setLogicLatency(int logicLatency) {
+		this.logicLatency = logicLatency;
 	}
 
 }
