@@ -39,12 +39,13 @@ public class Engine {
 	private void init() throws NumberFormatException, IOException {
 		parser = Parser.getInstance();
 		instructions = parser.getParsedCode();
-		for (Instruction ins : instructions) {
-			System.out.println(ins);
-		}
-		caches = new LinkedList<Cache>();
-		caches.add(new Cache(8, 2, 1, WritingPolicyHit.WRITE_BACK,
-				WritingPolicyMiss.WRITE_ALLOCATE, 1, 0));
+		this.caches = new LinkedList<Cache>();
+		// for (Instruction ins : instructions) {
+		// System.out.println(ins);
+		// }
+		// caches = new LinkedList<Cache>();
+		// caches.add(new Cache(8, 2, 1, WritingPolicyHit.WRITE_BACK,
+		// WritingPolicyMiss.WRITE_ALLOCATE, 1, 0));
 		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
 		// WritingPolicyMiss.WRITE_AROUND, 2, 1));
 		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
@@ -62,7 +63,6 @@ public class Engine {
 		// memory.setData(101, (short) 101);
 		// readCacheInputs();
 		// readInstructions();
-		initPC();
 	}
 
 	public LinkedList<Cache> getCaches() {
@@ -72,9 +72,9 @@ public class Engine {
 	private void initPC() throws NumberFormatException, IOException {
 		BufferedReader bfr = new BufferedReader(
 				new InputStreamReader(System.in));
-		System.out.println("Enter starting address of instructions in memory");
-		setInstructionsStartingAddress(Integer.parseInt(bfr.readLine()));
-		pc = instructionsStartingAddress;
+		// System.out.println("Enter starting address of instructions in memory");
+		// setInstructionsStartingAddress(Integer.parseInt(bfr.readLine()));
+		// pc = instructionsStartingAddress;
 	}
 
 	// add Instruction
@@ -111,6 +111,22 @@ public class Engine {
 		// }
 		System.out.println(numberOfExecutedInstructions);
 		System.out.println("AMAT (Number of cycels) " + numberOfCycles);
+	}
+
+	public void runNew() {
+		// TODO
+		// check on pc same as original run and in the loop:
+		// 1)if there is space in instruction buffer fetch a max of m
+		// instructions
+		// 2)if instructions can be issued (ROB entry available, RS entry
+		// available) issue them one by one until you fetch m instructions or
+		// you encounter an instruction that can't be issued
+		// 3) if instructions can be executed(operands are ready) start
+		// executing them (no limit on number of instructions you can execute
+		// here)
+		// 4) if instructions can be written (finished execution) write only one
+		// instruction(oldest in program order)
+		// 5) if an instruction can be committed, commit it
 	}
 
 	private void getInstructionFromCaches(int location) {
@@ -239,22 +255,25 @@ public class Engine {
 		}
 	}
 
-	public void readCacheInputs() throws NumberFormatException, IOException {
-		BufferedReader bfr = new BufferedReader(
-				new InputStreamReader(System.in));
-
-		System.out.println("Enter the Memory access time");
-		int hitTimeMemory = Integer.parseInt(bfr.readLine());
+	public void readCacheInputs(String hierarchy) throws NumberFormatException,
+			IOException {
+		StringTokenizer tkn = new StringTokenizer(hierarchy);
+		// start addres
+		this.instructionsStartingAddress = Integer.parseInt(tkn.nextToken());
+		// Memoery Access Time
+		// System.out.println("Enter the Memory access time");
+		int hitTimeMemory = Integer.parseInt(tkn.nextToken());
 		this.memory.setAccessTime(hitTimeMemory);
-		System.out.println("Enter the number of cache levels");
-		int cacheLevels = Integer.parseInt(bfr.readLine());
+		// System.out.println("Enter the number of cache levels");
+		// cache levels
+		int cacheLevels = Integer.parseInt(tkn.nextToken());
 		for (int i = 1; i <= cacheLevels; i++) {
 			System.out
 					.println("Enter cache level "
 							+ i
 							+ "'s by Size of cache, Block size, Associativity, Writing policy in hit, writing policy in miss and number of cycles to access data ex: 32 12 1 1 WRITE_BACK WRITE_ALLOCATE 7");
-			// ex: 32 12 1 1 WRITE_BACK
-			StringTokenizer tkn = new StringTokenizer(bfr.readLine());
+			// ex: 32 12 1 1 WRITE_BACK WRITE_ALLOCATE
+			// StringTokenizer tkn = new StringTokenizer(bfr.readLine());
 			int size = Integer.parseInt(tkn.nextToken());
 			int blockSize = Integer.parseInt(tkn.nextToken());
 			int associativity = Integer.parseInt(tkn.nextToken());
@@ -266,6 +285,7 @@ public class Engine {
 			Cache cache = new Cache(size, blockSize, associativity,
 					writingPolicyHit, writingPolicyMiss, numberOfCycles, i - 1);
 			this.caches.add(cache);
+			// caches.get(i - 1).printCache();
 		}
 
 	}

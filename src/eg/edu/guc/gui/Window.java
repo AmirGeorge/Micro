@@ -33,6 +33,8 @@ public class Window extends JFrame {
 	JEditorPane editorPane_data;
 	JEditorPane editorPane_output;
 	JTable table_memory;
+	JButton btn_run;
+	JPanel panel_optons;
 
 	/**
 	 * Create the frame.
@@ -52,65 +54,11 @@ public class Window extends JFrame {
 		contentPane.add(panel_container);
 		panel_container.setLayout(null);
 
-		JPanel panel_optons = new JPanel();
+		panel_optons = new JPanel();
 		panel_optons.setBackground(Color.GRAY);
 		panel_optons.setBounds(0, 0, 1018, 31);
 		panel_container.add(panel_optons);
 		panel_optons.setLayout(null);
-
-		JButton btn_run = new JButton("Run");
-		BufferedImage buttonIcon;
-		try {
-			buttonIcon = ImageIO.read(new File("res/img/icon_run.png"));
-			btn_run_1 = new JButton(new ImageIcon(buttonIcon));
-			btn_run_1.setHorizontalAlignment(SwingConstants.LEFT);
-			btn_run_1.setBorder(BorderFactory.createEmptyBorder());
-			btn_run_1.setContentAreaFilled(false);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		// btn_run_1.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent arg0) {
-		// }
-		// });
-		btn_run_1.addMouseListener(new MouseListener() {
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				try {
-					Adapter.getInstance().startEngine(
-							editorPane_hierarchy.getText(),
-							editorPane_hardware.getText(),
-							editorPane_code.getText(),
-							editorPane_data.getText());
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-
-			}
-		});
-		btn_run_1.setBounds(0, 0, 89, 23);
-		panel_optons.add(btn_run_1);
 
 		// JScrollPane scrollPane_caches = new JScrollPane();
 		// scrollPane_caches.setBounds(618, 32, 400, 707);
@@ -176,6 +124,65 @@ public class Window extends JFrame {
 		// table_memory = new JTable(values, columns2);
 		table_memory = new JTable();
 		scrollPane_memory.setViewportView(table_memory);
+
+		initRunButton();
+	}
+
+	private void initRunButton() {
+		btn_run = new JButton("Run");
+		BufferedImage buttonIcon;
+		try {
+			buttonIcon = ImageIO.read(new File("res/img/icon_run.png"));
+			btn_run_1 = new JButton(new ImageIcon(buttonIcon));
+			btn_run_1.setHorizontalAlignment(SwingConstants.LEFT);
+			btn_run_1.setBorder(BorderFactory.createEmptyBorder());
+			btn_run_1.setContentAreaFilled(false);
+			btn_run_1.setBounds(0, 0, 89, 23);
+			panel_optons.add(btn_run_1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		// btn_run_1.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent arg0) {
+		// }
+		// });
+		btn_run_1.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+
+					Adapter.getInstance().startEngine(
+							editorPane_hierarchy.getText(),
+							editorPane_hardware.getText(),
+							editorPane_code.getText(),
+							editorPane_data.getText());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			}
+		});
 	}
 
 	private void populateCacheTabs() {

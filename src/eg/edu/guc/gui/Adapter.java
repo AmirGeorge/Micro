@@ -42,6 +42,7 @@ public class Adapter {
 	public void startEngine(String hierarchy, String hardware, String code,
 			String data) throws IOException {
 		// TODO pass data to Parser and Engine
+		Engine.getInstance().readCacheInputs(hierarchy);
 		populateGUI();
 	}
 

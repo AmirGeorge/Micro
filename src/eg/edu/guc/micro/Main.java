@@ -9,6 +9,12 @@ public class Main {
 
 	public static void main(String[] args) throws NumberFormatException,
 			IOException {
+		// String a = "abc \n ab";
+		// StringTokenizer tkn = new StringTokenizer(a);
+		// while (tkn.hasMoreTokens()) {
+		// System.out.println(tkn.nextToken());
+		// }
+
 		//
 		Parser parser = Parser.getInstance();
 		if (parser
