@@ -52,6 +52,16 @@ public class ReservationStation {
 			rs[index].put("A", "");
 			rs[index].put("State", "NONE");
 			rs[index].put("ExecCyclesLeft", "");
+			rs[index].put("Fresh", "false");// handling 7etet wa7d fi nafs el
+											// cycle fadda el entry bas ana
+											// m2drsh aktb fel entry dih fi nafs
+											// el clock cycle 7asab el sheet
+			rs[index].put("OperandsFresh", "false");// handling 7ettet wa7d fi
+													// nafs el cycle 3aml write
+													// lel operands ely kan wa2f
+													// 3leeha, el mfrood 7asab
+													// el sheet mabtedeesh
+													// execute fel cycle dih
 			index++;
 		}
 
@@ -68,6 +78,8 @@ public class ReservationStation {
 			rs[index].put("A", "");
 			rs[index].put("State", "NONE");
 			rs[index].put("ExecCyclesLeft", "");
+			rs[index].put("Fresh", "false");
+			rs[index].put("OperandsFresh", "false");
 			index++;
 		}
 		for (int i = 0; i < numberOfMultiply; i++) {
@@ -83,6 +95,8 @@ public class ReservationStation {
 			rs[index].put("A", "");
 			rs[index].put("State", "NONE");
 			rs[index].put("ExecCyclesLeft", "");
+			rs[index].put("Fresh", "false");
+			rs[index].put("OperandsFresh", "false");
 			index++;
 		}
 
@@ -99,6 +113,8 @@ public class ReservationStation {
 			rs[index].put("A", "");
 			rs[index].put("State", "NONE");
 			rs[index].put("ExecCyclesLeft", "");
+			rs[index].put("Fresh", "false");
+			rs[index].put("OperandsFresh", "false");
 			index++;
 		}
 
@@ -115,17 +131,13 @@ public class ReservationStation {
 			rs[index].put("A", "");
 			rs[index].put("State", "NONE");
 			rs[index].put("ExecCyclesLeft", "");
+			rs[index].put("Fresh", "false");
+			rs[index].put("OperandsFresh", "false");
 			index++;
 		}
 	}
 
 	public boolean insertInstruction(Instruction instr) {
-		/*
-		 * for (int i = 0; i < rs.length; i++) { if
-		 * (rs[i].get("Name").equals("")) {
-		 * 
-		 * return true; } } return false;
-		 */
 		if (instr.getInstructionName().equals("LW")) {
 			return insertIntoRS(instr, "Load");
 		}
@@ -165,7 +177,8 @@ public class ReservationStation {
 	private boolean insertIntoRS(Instruction instr, String rsName) {
 		for (int i = 0; i < rs.length; i++) {
 			if (rs[i].get("Name").equals(rsName)
-					&& rs[i].get("Busy").equals("false")) {
+					&& rs[i].get("Busy").equals("false")
+					&& rs[i].get("Fresh").equals("false")) {
 				// TODO insert instruction
 				return true;
 			}
@@ -186,6 +199,7 @@ public class ReservationStation {
 				rs[i].put("Qk", "");
 				rs[i].put("Dest", "");
 				rs[i].put("A", "");
+				rs[i].put("Fresh", "true");
 				break;
 			}
 		}
@@ -193,7 +207,8 @@ public class ReservationStation {
 
 	public void updateRSentry(String instrIndex, String busy, String vj,
 			String vk, String qj, String qk, String dest, String a,
-			String state, String execCyclesLeft) {
+			String state, String execCyclesLeft, String fresh,
+			String operandsFresh) {
 		for (int i = 0; i < rs.length; i++) {
 			if (rs[i].get("InstrcutionIndex").equals(instrIndex + "")) {
 				if (busy != null) {
@@ -223,6 +238,12 @@ public class ReservationStation {
 				if (execCyclesLeft != null) {
 					rs[i].put("ExecCyclesLeft", execCyclesLeft);
 				}
+				if (fresh != null) {
+					rs[i].put("Fresh", fresh);
+				}
+				if (operandsFresh != null) {
+					rs[i].put("OperandsFresh", operandsFresh);
+				}
 				break;
 			}
 		}
@@ -235,5 +256,33 @@ public class ReservationStation {
 			}
 		}
 		return null;
+	}
+
+	public void falsifyFreshes() {
+		for (int i = 0; i < rs.length; i++) {
+			rs[i].put("Fresh", "false");
+			rs[i].put("OperandsFresh", "false");
+		}
+	}
+
+	public void executeAllPossible() {
+		// TODO check if issued instructions have operands ready and operands
+		// not fresh then start execution
+		// TODO check if executing instructions have execution cycles left, then
+		// decrement it, if reaches zero make state EXECUTED
+		// TODO append to guiConsoleOutput
+	}
+
+	public int writeIfPossible() {// returns index of written instruction, -1 if
+									// no write
+		// TODO loop on the ROB from head to tail-1 and write first instruction
+		// that is ready for write (WRITE not COMMIT, you will know if ready for
+		// write from the RS entry).Do the loop on ROB thing to always write the
+		// instruction earlier in program order if more than one instruction can
+		// write
+		// TODO when write is finished pass operands to other RS entries waiting
+		// for it and set OperandsFresh for them to true
+		// TODO handle store stage where latency spent in write
+		return -1;
 	}
 }

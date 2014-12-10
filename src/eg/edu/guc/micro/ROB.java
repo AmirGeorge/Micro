@@ -8,6 +8,10 @@ public class ROB {
 
 	private boolean initialState;
 
+	HashMap<String, String>[] table;
+	int headIndex;
+	int tailIndex;
+
 	public static ROB getInstance() {
 		if (_instance == null) {
 			_instance = new ROB();
@@ -19,10 +23,6 @@ public class ROB {
 
 	}
 
-	HashMap<String, String>[] table;
-	int headIndex;
-	int tailIndex;
-
 	@SuppressWarnings("unchecked")
 	public void init(int size) {
 		table = new HashMap[size];
@@ -32,7 +32,10 @@ public class ROB {
 			table[i].put("Destination", "");
 			table[i].put("Value", "");
 			table[i].put("Ready", "N");
-			table[i].put("Fresh", "false");
+			table[i].put("Fresh", "false"); // handling 7etet wa7d fi nafs el
+											// cycle fadda el entry bas ana
+											// m2drsh aktb fel entry dih fi nafs
+											// el clock cycle 7asab el sheet
 		}
 		headIndex = 0;
 		tailIndex = 0;
@@ -40,6 +43,9 @@ public class ROB {
 	}
 
 	public void insertInstruction(Instruction instr) {
+		// TODO put "Fresh" be "true" hna, handling 7etet wa7d fi nafs el cycle
+		// fadda el entry bas ana m2drsh aktb fel entry dih fi nafs el clock
+		// cycle 7asab el sheet
 		if (instr.getInstructionName().equals("LW")) {
 			// TODO
 		} else if (instr.getInstructionName().equals("SW")) {
@@ -69,7 +75,9 @@ public class ROB {
 
 	public boolean commitInstruction() {
 		if (table[headIndex].get("Ready").equals("Y")) {
-			// TODO commit
+			table[headIndex].put("Fresh", "true");
+			// TODO commit: deleteRSentry, deleteROBentry, update actual
+			// register or memory value
 			headIndex = (headIndex + 1) % table.length;
 			return true;
 		}
@@ -91,6 +99,7 @@ public class ROB {
 					table[j].put("InstructionIndex", "");
 					table[j].put("Value", "");
 					table[j].put("Ready", "N");
+					table[j].put("Fresh", "false");
 				}
 				tailIndex = i;
 				break;
@@ -100,6 +109,16 @@ public class ROB {
 
 	public boolean isFull() {
 		return headIndex == tailIndex && !initialState;
+	}
+
+	public void falsifyFreshes() {
+		for (int i = 0; i < table.length; i++) {
+			table[i].put("Fresh", "false");
+		}
+	}
+
+	public int getInstructionIndexAtHead() {
+		return Integer.parseInt(table[headIndex].get("InstructionIndex"));
 	}
 
 }

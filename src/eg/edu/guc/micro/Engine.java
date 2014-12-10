@@ -129,7 +129,7 @@ public class Engine {
 		// }
 		// }
 		System.out.println(numberOfExecutedInstructions);
-		System.out.println("AMAT (Number of cycels) " + numberOfCycles);
+		System.out.println("AMAT (Number of cycles) " + numberOfCycles);
 	}
 
 	public void runNew() throws IOException {
@@ -137,6 +137,10 @@ public class Engine {
 			currentCycle++;
 			guiConsoleOutput.append("Cycle " + currentCycle + ":\n");
 			guiConsoleOutput.append("==========================\n");
+
+			ROB.getInstance().falsifyFreshes();
+			ReservationStation.getInstance().falsifyFreshes();
+
 			// Note: called bel 3aks 3shan maslan myb2ash wa7d fetched y7slo
 			// issue fi nafs el cycle
 
@@ -274,20 +278,34 @@ public class Engine {
 	}
 
 	private void execute() {
-		// TODO Auto-generated method stub
+		// TODO take into consideration loadLatency, storeLatency, addLatency,
+		// mulLatency, logicLatency
+		// TODO take into consideration lw load aw store feeh cycle zyada abl el
+		// execute t7sb el address
+		ReservationStation.getInstance().executeAllPossible();
+
 	}
 
 	private void write() {
-		// TODO Auto-generated method stub
-		// TODO when write is finished don't change operands in other RS
-		// entries, just modify InstructionState to WRITTEN
-		// execute checks on instruction state of elly m3atalo if it is
-		// written get operand from its rob entry
-
+		int x = ReservationStation.getInstance().writeIfPossible();
+		if (x != -1) {
+			guiConsoleOutput.append("Instruction at index " + x
+					+ " writes successfully");
+		} else {
+			guiConsoleOutput.append("No write happens in this cycle");
+		}
 	}
 
 	private void commit() {
-		// TODO Auto-generated method stub
+		// TODO handle if ROB is empty
+		int instrIndexToCommit = ROB.getInstance().getInstructionIndexAtHead();
+		if (ROB.getInstance().commitInstruction()) {
+			guiConsoleOutput.append("Instruction at index "
+					+ instrIndexToCommit + " committed successfully");
+		} else {
+			guiConsoleOutput.append("Instruction at index "
+					+ instrIndexToCommit + " not ready for commit yet");
+		}
 
 	}
 
@@ -470,11 +488,11 @@ public class Engine {
 		int logicLatency = 0;
 		// TODO get all the above from GUI
 		setPipelineWidth(pipelineWidth);
-		setLoadLatency(loadLatency);
-		setStoreLatency(storeLatency);
-		setMulLatency(mulLatency);
-		setAddLatency(addLatency);
-		setLogicLatency(logicLatency);
+		this.loadLatency = loadLatency;
+		this.storeLatency = storeLatency;
+		this.mulLatency = mulLatency;
+		this.addLatency = addLatency;
+		this.logicLatency = logicLatency;
 		InstructionBuffer.getInstance().init(instrBufferSize);
 		ReservationStation.getInstance().init(numberOfLoads, numberOfStores,
 				numberOfMultiply, numberOfAdd, numberOfLogic);
@@ -541,40 +559,20 @@ public class Engine {
 		return loadLatency;
 	}
 
-	public void setLoadLatency(int loadLatency) {
-		this.loadLatency = loadLatency;
-	}
-
 	public int getStoreLatency() {
 		return storeLatency;
-	}
-
-	public void setStoreLatency(int storeLatency) {
-		this.storeLatency = storeLatency;
 	}
 
 	public int getMulLatency() {
 		return mulLatency;
 	}
 
-	public void setMulLatency(int mulLatency) {
-		this.mulLatency = mulLatency;
-	}
-
 	public int getAddLatency() {
 		return addLatency;
 	}
 
-	public void setAddLatency(int addLatency) {
-		this.addLatency = addLatency;
-	}
-
 	public int getLogicLatency() {
 		return logicLatency;
-	}
-
-	public void setLogicLatency(int logicLatency) {
-		this.logicLatency = logicLatency;
 	}
 
 	public int getPipelineWidth() {
