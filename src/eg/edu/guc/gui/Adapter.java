@@ -49,7 +49,7 @@ public class Adapter {
 	private void populateGUI() throws IOException {
 		// LinkedList<Cache> caches = Engine.getInstance().getCaches();
 		Memory memory = Engine.getInstance().getMemory();
-		StringBuilder sb = Engine.getInstance().getSb();
+		StringBuilder sb = Engine.getInstance().getGUIConsoleOutput();
 
 		// TODO populate caches
 

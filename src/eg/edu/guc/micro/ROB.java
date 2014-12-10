@@ -6,6 +6,8 @@ public class ROB {
 
 	private static ROB _instance;
 
+	private boolean initialState;
+
 	public static ROB getInstance() {
 		if (_instance == null) {
 			_instance = new ROB();
@@ -18,8 +20,8 @@ public class ROB {
 	}
 
 	HashMap<String, String>[] table;
-	int headIndex = 0;
-	int tailIndex = 0;
+	int headIndex;
+	int tailIndex;
 
 	@SuppressWarnings("unchecked")
 	public void init(int size) {
@@ -30,15 +32,14 @@ public class ROB {
 			table[i].put("Destination", "");
 			table[i].put("Value", "");
 			table[i].put("Ready", "N");
+			table[i].put("Fresh", "false");
 		}
 		headIndex = 0;
 		tailIndex = 0;
+		initialState = true;
 	}
 
-	public boolean insertInstruction(Instruction instr) {
-		if (headIndex == tailIndex && headIndex != 0) {
-			return false;
-		}
+	public void insertInstruction(Instruction instr) {
 		if (instr.getInstructionName().equals("LW")) {
 			// TODO
 		} else if (instr.getInstructionName().equals("SW")) {
@@ -63,7 +64,7 @@ public class ROB {
 			// TODO
 		}
 		tailIndex = (tailIndex + 1) % table.length;
-		return true;
+		initialState = false;
 	}
 
 	public boolean commitInstruction() {
@@ -77,8 +78,14 @@ public class ROB {
 
 	public void flushROBstartingFromInstruction(int instrIndex) {
 		// TODO test
+		// TODO flush RS too
 		for (int i = 0; i < table.length; i++) {
 			if (table[i].get("InstructionIndex").equals(instrIndex + "")) {
+				if (headIndex == i) {
+					initialState = true;// handles when we will flush all the
+										// ROB, in that case initial state is
+										// restored when ROB is empty
+				}
 				for (int j = i; j != headIndex; j = (j + 1) % table.length) {
 					table[j].put("Destination", "");
 					table[j].put("InstructionIndex", "");
@@ -89,6 +96,10 @@ public class ROB {
 				break;
 			}
 		}
+	}
+
+	public boolean isFull() {
+		return headIndex == tailIndex && !initialState;
 	}
 
 }

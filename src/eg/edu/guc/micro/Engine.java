@@ -21,13 +21,26 @@ public class Engine {
 	private int numberOfExecutedInstructions = 0;
 	private int numberOfCycles = 0;
 	private int instructionsStartingAddress;
-	private StringBuilder sb;
+	private StringBuilder guiConsoleOutput;
 
+	private int pipelineWidth;
 	private int loadLatency;
 	private int storeLatency;
 	private int mulLatency;
 	private int addLatency;
 	private int logicLatency;
+	private int currentCycle = 0;
+
+	private boolean fetchFinished; // denotes no more instructions to fetch till
+									// program ends
+	private boolean issueFinished; // denotes no more instructions to issue till
+									// program ends
+	private boolean executeFinished; // denotes no more instructions to execute
+										// till program ends
+	private boolean writeFinished; // denotes no more instructions to write till
+									// program ends
+	private boolean commitFinished; // denotes no more instructions to commit
+									// till program ends
 
 	private Engine() {
 
@@ -62,7 +75,7 @@ public class Engine {
 		// WritingPolicyMiss.WRITE_ALLOCATE, 43, 2));
 		// // TODO test
 		memory = new Memory();
-		sb = new StringBuilder();
+		guiConsoleOutput = new StringBuilder();
 		// memory.setData(0, (short) 10);
 		// memory.setData(1, (short) 20);
 		// memory.setData(100, (short) 100);
@@ -92,7 +105,7 @@ public class Engine {
 	//
 	// }
 
-	public void run() throws NumberFormatException, IOException {
+	public void run() throws IOException {
 		int previousPC = pc;
 		while ((pc - instructionsStartingAddress) / 2 < instructions.size()) {
 			getInstructionFromCaches(pc);
@@ -119,7 +132,59 @@ public class Engine {
 		System.out.println("AMAT (Number of cycels) " + numberOfCycles);
 	}
 
-	public void runNew() {
+	public void runNew() throws IOException {
+		while (!commitFinished) {
+			currentCycle++;
+			guiConsoleOutput.append("Cycle " + currentCycle + ":\n");
+			guiConsoleOutput.append("==========================\n");
+			// Note: called bel 3aks 3shan maslan myb2ash wa7d fetched y7slo
+			// issue fi nafs el cycle
+
+			// commit
+			guiConsoleOutput.append("Commit stage: \n");
+			commit();
+			guiConsoleOutput.append("------------------------\n");
+			// write
+			guiConsoleOutput.append("Write stage: \n");
+			if (!writeFinished) {
+				write();
+			} else {
+				guiConsoleOutput
+						.append("all writing finished in previous cycles\n");
+			}
+			guiConsoleOutput.append("------------------------\n");
+			// execute
+			guiConsoleOutput.append("Execute stage: \n");
+			if (!executeFinished) {
+				execute();
+			} else {
+				guiConsoleOutput
+						.append("all executing finished in previous cycles\n");
+			}
+			guiConsoleOutput.append("------------------------\n");
+			// issue
+			guiConsoleOutput.append("Issue stage: \n");
+			if (!issueFinished) {
+				issue();
+			} else {
+				guiConsoleOutput
+						.append("all issuing finished in previous cycles\n");
+			}
+			guiConsoleOutput.append("------------------------\n");
+			// fetch
+			guiConsoleOutput.append("Fetch stage: \n");
+			if (!fetchFinished) {
+				fetch();
+			} else {
+				guiConsoleOutput
+						.append("all fetching finished in previous cycles\n");
+			}
+			guiConsoleOutput.append("------------------------\n");
+		}
+		guiConsoleOutput.append("==========================\n");
+		guiConsoleOutput.append("Program finished at cycle: " + currentCycle
+				+ "\n");
+
 		// TODO
 		// check on pc same as original run and in the loop:
 		// 1)if there is space in instruction buffer fetch a max of m
@@ -133,6 +198,97 @@ public class Engine {
 		// 4) if instructions can be written (finished execution) write only one
 		// instruction(oldest in program order)
 		// 5) if an instruction can be committed, commit it
+	}
+
+	private void fetch() {
+		if (getInstructionIndexFromPC() >= instructions.size()
+				|| getInstructionIndexFromPC() < 0) {
+			fetchFinished = true;
+			guiConsoleOutput
+					.append("all fetching finished in previous cycles\n");
+			return;
+		}
+		if (InstructionBuffer.getInstance().GetNumberOfAvailablePlaces() == 0) {
+			guiConsoleOutput
+					.append("nothing fetched as there is no space in instruction buffer\n");
+			return;
+		}
+		for (int i = 0; i < pipelineWidth
+				&& InstructionBuffer.getInstance().GetNumberOfAvailablePlaces() > 0
+				&& getInstructionIndexFromPC() < instructions.size()
+				&& getInstructionIndexFromPC() >= 0; i++) {
+			InstructionBuffer.getInstance().putInstruction(
+					getInstructionIndexFromPC());
+			guiConsoleOutput.append("Fetched instruction of index "
+					+ getInstructionIndexFromPC() + "\n");
+			if (instructions.get(getInstructionIndexFromPC()).getType() == InstructionType.CONTROL) {
+				// TODO handle branch prediction and update PC accordingly
+			} else {
+				pc += 2;
+			}
+		}
+
+	}
+
+	private void issue() {
+		if (fetchFinished && InstructionBuffer.getInstance().isEmpty()) {
+			issueFinished = true;
+			guiConsoleOutput
+					.append("all issuing happened in previous cycles\n");
+			return;
+		}
+		if (InstructionBuffer.getInstance().isEmpty()) {
+			guiConsoleOutput
+					.append("no issuing since instruction buffer is empty\n");
+			return;
+		}
+		for (int i = 0; i < pipelineWidth; i++) {
+			if (InstructionBuffer.getInstance().isEmpty()) {
+				return;// instruction buffer got empty after issuing one or more
+						// instructions
+			}
+			boolean ROBentryAvailable = !ROB.getInstance().isFull();
+			Instruction nxtInstructionToIssue = instructions
+					.get(InstructionBuffer.getInstance()
+							.getFirstInstructionIndexToRemove());
+			if (ROBentryAvailable
+					&& ReservationStation.getInstance().insertInstruction(
+							nxtInstructionToIssue)) {
+				guiConsoleOutput.append("Instruction of index "
+						+ InstructionBuffer.getInstance()
+								.getFirstInstructionIndexToRemove()
+						+ " issued successfully\n");
+				InstructionBuffer.getInstance().removeInstruction();
+				ReservationStation.getInstance().insertInstruction(
+						nxtInstructionToIssue);
+				ROB.getInstance().insertInstruction(nxtInstructionToIssue);
+			} else {
+				guiConsoleOutput.append("Instruction of index "
+						+ InstructionBuffer.getInstance()
+								.getFirstInstructionIndexToRemove()
+						+ " not issued due to RS or ROB not available\n");
+				break;
+			}
+		}
+
+	}
+
+	private void execute() {
+		// TODO Auto-generated method stub
+	}
+
+	private void write() {
+		// TODO Auto-generated method stub
+		// TODO when write is finished don't change operands in other RS
+		// entries, just modify InstructionState to WRITTEN
+		// execute checks on instruction state of elly m3atalo if it is
+		// written get operand from its rob entry
+
+	}
+
+	private void commit() {
+		// TODO Auto-generated method stub
+
 	}
 
 	private void getInstructionFromCaches(int location) {
@@ -296,7 +452,7 @@ public class Engine {
 	}
 
 	public void readHardwareInputs(String hardware) {
-		int pipelineWidth;
+		int pipelineWidth = 0;
 		int instrBufferSize = 0;
 		int numberOfLoads = 0;
 		int numberOfStores = 0;
@@ -313,6 +469,7 @@ public class Engine {
 		int addLatency = 0;
 		int logicLatency = 0;
 		// TODO get all the above from GUI
+		setPipelineWidth(pipelineWidth);
 		setLoadLatency(loadLatency);
 		setStoreLatency(storeLatency);
 		setMulLatency(mulLatency);
@@ -372,12 +529,12 @@ public class Engine {
 		return this.numberOfCycles;
 	}
 
-	public StringBuilder getSb() {
-		return sb;
+	public StringBuilder getGUIConsoleOutput() {
+		return guiConsoleOutput;
 	}
 
-	public void AppendTOSb(String s) {
-		sb.append(s);
+	public void AppendTOGUIConsoleOutput(String s) {
+		guiConsoleOutput.append(s);
 	}
 
 	public int getLoadLatency() {
@@ -418,6 +575,18 @@ public class Engine {
 
 	public void setLogicLatency(int logicLatency) {
 		this.logicLatency = logicLatency;
+	}
+
+	public int getPipelineWidth() {
+		return pipelineWidth;
+	}
+
+	public void setPipelineWidth(int pipelineWidth) {
+		this.pipelineWidth = pipelineWidth;
+	}
+
+	public int getInstructionIndexFromPC() {
+		return (pc - instructionsStartingAddress) / 2;
 	}
 
 }

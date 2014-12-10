@@ -8,6 +8,7 @@ public class InstructionBuffer {
 
 	ArrayList<Integer> buffer; // array element is instruction index in
 								// Instruction ArrayList
+	private int size;
 	int nextIndex;
 
 	public static InstructionBuffer getInstance() {
@@ -22,19 +23,17 @@ public class InstructionBuffer {
 	}
 
 	public void init(int size) {
+		this.size = size;
 		buffer = new ArrayList<Integer>(size);
-		for (int i = 0; i < buffer.size(); i++) {
-			buffer.add(-1);
-		}
 		nextIndex = 0;
 	}
 
 	public int GetNumberOfAvailablePlaces() {
-		return buffer.size() - nextIndex;
+		return size - nextIndex;
 	}
 
-	public void putInstructions(ArrayList<Integer> instructions) {
-		buffer.addAll(instructions);
+	public void putInstruction(int instructionIndex) {
+		buffer.add(instructionIndex);
 	}
 
 	public int getFirstInstructionIndexToRemove() {
@@ -43,6 +42,14 @@ public class InstructionBuffer {
 
 	public void removeInstruction() {
 		buffer.remove(0);
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public boolean isEmpty() {
+		return buffer.size() == 0;
 	}
 
 }
