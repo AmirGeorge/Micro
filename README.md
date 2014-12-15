@@ -50,3 +50,7 @@ until just before the head.
 10) What should happen with the data caches ?
 - For the write and commit instructions, they will take 1 cycle in all instructions except for the store instruction, which spends the latency it takes in the memory hierarchy (Data Cache) during the write stage.
 For the load instructions you take into account the data cache during the execute stage normally.
+
+11) In case it is a JMP instruction so in the fetch stage we will set the PC value to be equal to PC+1+regA+imm , but the operand in regA is not ready because
+	some other RS will produce it, what should we in this case ? Delay the fetch until the operand is ready ? Or could we ignore this case ?
+- You will stall until the regA value needed is ready.
