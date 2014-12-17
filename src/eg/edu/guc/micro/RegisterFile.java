@@ -4,9 +4,8 @@ import java.util.HashMap;
 
 public class RegisterFile {
 
-	private static RegisterFile _instance;
-
 	private HashMap<String, Short> regFile;
+	private static RegisterFile _instance;
 
 	private RegisterFile() {
 		regFile = new HashMap<String, Short>();
@@ -21,9 +20,8 @@ public class RegisterFile {
 	}
 
 	public static RegisterFile getInstance() {
-		if (_instance == null) {
+		if (_instance == null)
 			_instance = new RegisterFile();
-		}
 		return _instance;
 	}
 
@@ -39,6 +37,11 @@ public class RegisterFile {
 
 	public HashMap<String, Short> getRegFile() {
 		return regFile;
+	}
+
+	public void write(Instruction inst) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

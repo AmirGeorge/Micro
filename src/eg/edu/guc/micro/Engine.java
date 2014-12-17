@@ -1,8 +1,6 @@
 package eg.edu.guc.micro;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
@@ -16,12 +14,24 @@ public class Engine {
 	private Parser parser;
 	private Memory memory;
 	private LinkedList<Cache> caches;
-	private ArrayList<Instruction> instructions;
+	public ArrayList<Instruction> instructions;
 	private int pc;
 	private int numberOfExecutedInstructions = 0;
 	private int numberOfCycles = 0;
 	private int instructionsStartingAddress;
 	private StringBuilder sb;
+	private int time = 0;
+	private InstructionBuffer instructionBuffer;
+	public int mWay;
+	private ReservationStation RS;
+	public ROB rob;
+	public int robSize;
+	public int loadExecuteLatanecy;
+	public int addExecuteLatency;
+	public int multExecuteLatency;
+	public int logicExecuteLatency;
+
+	public int numberOfCommitedInstructions;
 
 	private Engine() {
 
@@ -39,52 +49,20 @@ public class Engine {
 	private void init() throws NumberFormatException, IOException {
 		parser = Parser.getInstance();
 		instructions = parser.getParsedCode();
-		this.caches = new LinkedList<Cache>();
-		// for (Instruction ins : instructions) {
-		// System.out.println(ins);
-		// }
-		// caches = new LinkedList<Cache>();
-		// caches.add(new Cache(8, 2, 1, WritingPolicyHit.WRITE_BACK,
-		// WritingPolicyMiss.WRITE_ALLOCATE, 1, 0));
-		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
-		// WritingPolicyMiss.WRITE_AROUND, 2, 1));
-		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_THROUGH,
-		// WritingPolicyMiss.WRITE_AROUND, 2, 1));
-		// caches.add(new Cache(16, 2, 2, WritingPolicyHit.WRITE_BACK,
-		// WritingPolicyMiss.WRITE_ALLOCATE, 20, 1));
-		// caches.add(new Cache(32, 4, 2, WritingPolicyHit.WRITE_BACK,
-		// WritingPolicyMiss.WRITE_ALLOCATE, 43, 2));
-		// // TODO test
 		memory = new Memory();
 		sb = new StringBuilder();
-		// memory.setData(0, (short) 10);
-		// memory.setData(1, (short) 20);
-		// memory.setData(100, (short) 100);
-		// memory.setData(101, (short) 101);
-		// readCacheInputs();
-		// readInstructions();
+		caches = new LinkedList<Cache>();
+		instructionBuffer = new InstructionBuffer();
+		// HARDCODE 2
+		// load store mult add logic
+		RS = new ReservationStation(1, 0, 0, 2, 0);
+		rob = new ROB(3);
+
 	}
 
 	public LinkedList<Cache> getCaches() {
 		return this.caches;
 	}
-
-	private void initPC() throws NumberFormatException, IOException {
-		BufferedReader bfr = new BufferedReader(
-				new InputStreamReader(System.in));
-		// System.out.println("Enter starting address of instructions in memory");
-		// setInstructionsStartingAddress(Integer.parseInt(bfr.readLine()));
-		// pc = instructionsStartingAddress;
-	}
-
-	// add Instruction
-	// public void readInstructions() throws IOException {
-	// BufferedReader bfr = new BufferedReader(
-	// new InputStreamReader(System.in));
-	// String line;
-	// System.out.println("Enter instructions, followed by END in a new line");
-	//
-	// }
 
 	public void run() throws NumberFormatException, IOException {
 		int previousPC = pc;
@@ -99,22 +77,72 @@ public class Engine {
 				previousPC = pc;
 			}
 		}
-
-		// for (int i = 0; i < this.caches.size(); i++) {
-		// boolean[] flags = caches.get(i).getDirtyFlags();
-		// for (int j = 0; j < flags.length; j++) {
-		// if(flags[j]){
-		// // int location = caches.get(i).getData()[j].ge;
-		// writeData(i+1, newValue, memLocation);
-		// }
-		// }
-		// }
 		System.out.println(numberOfExecutedInstructions);
 		System.out.println("AMAT (Number of cycels) " + numberOfCycles);
 	}
 
-	public void runNew() {
-		// TODO
+	static int x = 0;
+
+	public void runNew() throws NumberFormatException, IOException {
+		int previousPC = pc;
+		int indexInstructionFetch = 0;
+		int indexInstructionIssue = 0;
+		while (true) {
+			// Fetching
+			while (instructionBuffer.buffer.size() <= mWay
+					&& indexInstructionFetch < instructions.size()) {
+				// getInstructionFromCaches(pc);
+				instructionBuffer.buffer.add(indexInstructionFetch);
+				indexInstructionFetch++;
+				if (pc == previousPC) {
+					previousPC += 2;
+				} else {
+					previousPC = pc;
+				}
+			}
+			// Issuing
+			int countIssue = 0;
+			boolean flag = true;
+			while (countIssue < mWay
+					&& indexInstructionIssue < indexInstructionFetch && flag) {
+
+				if (indexInstructionIssue < instructions.size()) {
+					Instruction inst = instructions
+							.get(instructionBuffer.buffer.peek());
+					if (canIssue(inst)) {
+						countIssue++;
+						inst = instructions
+								.get(instructionBuffer.buffer.poll());
+						RS.issue(inst, time, indexInstructionIssue);
+						rob.write(inst, indexInstructionIssue);
+						indexInstructionIssue++;
+					} else {
+						flag = false;
+					}
+				}
+			}
+			RS.al3bCommit(time);
+			RS.al3bWrite(time);
+			RS.al3bExecute(time);
+			if (numberOfCommitedInstructions == instructions.size()) {
+				break;
+			}
+			if (x == 15)
+				break;
+			x++;
+			time++;
+			System.out.println("Time " + time);
+			System.out.println(RS.toString());
+			System.out.println(rob.toString());
+			System.out.println(RS.registers);
+			System.out
+					.println("=========================================================");
+
+		}
+
+		System.out.println("==================END===================");
+		System.out.println("Time without calculating caches is " + time);
+
 		// check on pc same as original run and in the loop:
 		// 1)if there is space in instruction buffer fetch a max of m
 		// instructions
@@ -127,6 +155,13 @@ public class Engine {
 		// 4) if instructions can be written (finished execution) write only one
 		// instruction(oldest in program order)
 		// 5) if an instruction can be committed, commit it
+	}
+
+	private boolean canIssue(Instruction inst) {
+		if (RS.hasFree(inst) && rob.hasFree()) {
+			return true;
+		} else
+			return false;
 	}
 
 	private void getInstructionFromCaches(int location) {
@@ -154,6 +189,8 @@ public class Engine {
 
 	public short loadDataFromCaches(int memLocation, int startCache)
 			throws NumberFormatException, IOException {
+		this.caches = new LinkedList<Cache>();
+
 		// # of cycels
 		// short noOfCycels = 0;
 		int cacheIndex = -1;
@@ -272,7 +309,7 @@ public class Engine {
 					.println("Enter cache level "
 							+ i
 							+ "'s by Size of cache, Block size, Associativity, Writing policy in hit, writing policy in miss and number of cycles to access data ex: 32 12 1 1 WRITE_BACK WRITE_ALLOCATE 7");
-			// ex: 32 12 1 1 WRITE_BACK WRITE_ALLOCATE
+			// ex: 32 12 1 WRITE_BACK WRITE_ALLOCATE
 			// StringTokenizer tkn = new StringTokenizer(bfr.readLine());
 			int size = Integer.parseInt(tkn.nextToken());
 			int blockSize = Integer.parseInt(tkn.nextToken());

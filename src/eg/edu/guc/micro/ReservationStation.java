@@ -1,225 +1,306 @@
 package eg.edu.guc.micro;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public class ReservationStation {
-	// Different functional units:
-	// Load
-	// Store
-	// Mul (multiply and divide)
-	// Add (add, sub, jump, beq)
-	// Logic (logical operations)
-	HashMap<String, String>[] rs; // array of hashmaps, rob entry is hashmap
+	RSentry[] rs;
 	private int numberOfLoads;
 	private int numberOfStores;
 	private int numberOfMultiply;
 	private int numberOfAdd;
 	private int numberOfLogic;
+	private int busyOfLoads;
+	private int busyOfStores;
+	private int busyOfMultiply;
+	private int busyOfAdd;
+	private int busyOfLogic;
+	HashMap<String, Integer> registers;
 
-	@SuppressWarnings("unchecked")
 	public ReservationStation(int numberOfLoads, int numberOfStores,
 			int numberOfMultiply, int numberOfAdd, int numberOfLogic) {
-		rs = new HashMap[numberOfLoads + numberOfStores + numberOfMultiply
+		rs = new RSentry[numberOfLoads + numberOfStores + numberOfMultiply
 				+ numberOfAdd + numberOfLogic];
-		int index = 0;
-		for (int i = 0; i < numberOfLoads; i++) {
-			rs[index] = new HashMap<String, String>();
-			rs[index].put("Name", "Load");
-			rs[index].put("Busy", "false");
-			rs[index].put("InstrcutionIndex", "-1"); // index of the instruction
-														// in Instruction
-														// ArrayList in Engine
-														// class
-			rs[index].put("Vj", "");// register name to be put here
-			rs[index].put("Vk", "");
-			rs[index].put("Qj", "");
-			rs[index].put("Qk", "");
-			rs[index].put("Dest", "");
-			rs[index].put("A", "");
-			rs[index].put("State", "NONE");
-			rs[index].put("ExecCyclesLeft", "");
-			index++;
-		}
-
-		for (int i = 0; i < numberOfStores; i++) {
-			rs[index] = new HashMap<String, String>();
-			rs[index].put("Name", "Store");
-			rs[index].put("Busy", "false");
-			rs[index].put("InstrcutionIndex", "-1");
-			rs[index].put("Vj", "");
-			rs[index].put("Vk", "");
-			rs[index].put("Qj", "");
-			rs[index].put("Qk", "");
-			rs[index].put("Dest", "");
-			rs[index].put("A", "");
-			rs[index].put("State", "NONE");
-			rs[index].put("ExecCyclesLeft", "");
-			index++;
-		}
-		for (int i = 0; i < numberOfMultiply; i++) {
-			rs[index] = new HashMap<String, String>();
-			rs[index].put("Name", "Mul");
-			rs[index].put("Busy", "false");
-			rs[index].put("InstrcutionIndex", "-1");
-			rs[index].put("Vj", "");
-			rs[index].put("Vk", "");
-			rs[index].put("Qj", "");
-			rs[index].put("Qk", "");
-			rs[index].put("Dest", "");
-			rs[index].put("A", "");
-			rs[index].put("State", "NONE");
-			rs[index].put("ExecCyclesLeft", "");
-			index++;
-		}
-
-		for (int i = 0; i < numberOfAdd; i++) {
-			rs[index] = new HashMap<String, String>();
-			rs[index].put("Name", "Add");
-			rs[index].put("Busy", "false");
-			rs[index].put("InstrcutionIndex", "-1");
-			rs[index].put("Vj", "");
-			rs[index].put("Vk", "");
-			rs[index].put("Qj", "");
-			rs[index].put("Qk", "");
-			rs[index].put("Dest", "");
-			rs[index].put("A", "");
-			rs[index].put("State", "NONE");
-			rs[index].put("ExecCyclesLeft", "");
-			index++;
-		}
-
-		for (int i = 0; i < numberOfLoads; i++) {
-			rs[index] = new HashMap<String, String>();
-			rs[index].put("Name", "Logic");
-			rs[index].put("Busy", "false");
-			rs[index].put("InstrcutionIndex", "-1");
-			rs[index].put("Vj", "");
-			rs[index].put("Vk", "");
-			rs[index].put("Qj", "");
-			rs[index].put("Qk", "");
-			rs[index].put("Dest", "");
-			rs[index].put("A", "");
-			rs[index].put("State", "NONE");
-			rs[index].put("ExecCyclesLeft", "");
-			index++;
-		}
-	}
-
-	public boolean insertInstruction(Instruction instr) {
-		/*
-		 * for (int i = 0; i < rs.length; i++) { if
-		 * (rs[i].get("Name").equals("")) {
-		 * 
-		 * return true; } } return false;
-		 */
-		if (instr.getInstructionName().equals("LW")) {
-			return insertIntoRS(instr, "Load");
-		}
-		if (instr.getInstructionName().equals("SW")) {
-			return insertIntoRS(instr, "Store");
-		}
-		if (instr.getInstructionName().equals("JMP")) {
-			return insertIntoRS(instr, "Add");
-		}
-		if (instr.getInstructionName().equals("BEQ")) {
-			return insertIntoRS(instr, "Add");
-		}
-		if (instr.getInstructionName().equals("JALR")) {
-			return insertIntoRS(instr, "Add");
-		}
-		if (instr.getInstructionName().equals("RET")) {
-			return insertIntoRS(instr, "Add");
-		}
-		if (instr.getInstructionName().equals("ADD")) {
-			return insertIntoRS(instr, "Add");
-		}
-		if (instr.getInstructionName().equals("SUB")) {
-			return insertIntoRS(instr, "Add");
-		}
-		if (instr.getInstructionName().equals("ADDI")) {
-			return insertIntoRS(instr, "Add");
-		}
-		if (instr.getInstructionName().equals("NAND")) {
-			return insertIntoRS(instr, "Logic");
-		}
-		if (instr.getInstructionName().equals("MUL")) {
-			return insertIntoRS(instr, "Mul");
-		}
-		return false;
-	}
-
-	private boolean insertIntoRS(Instruction instr, String rsName) {
+		this.numberOfLoads = numberOfLoads;
+		this.numberOfStores = numberOfStores;
+		this.numberOfMultiply = numberOfMultiply;
+		this.numberOfAdd = numberOfAdd;
+		this.numberOfLogic = numberOfLogic;
 		for (int i = 0; i < rs.length; i++) {
-			if (rs[i].get("Name").equals(rsName)
-					&& rs[i].get("Busy").equals("false")) {
-				// insert instruction
-				return true;
+			rs[i] = new RSentry();
+		}
+		registers = new HashMap<String, Integer>();
+	}
+
+	public void issue(Instruction instr, int time, int numberOfInstruction) {
+		RSentry entry = new RSentry();
+		for (int i = 0; i < rs.length; i++) {
+			if (!rs[i].busy) {
+				entry = rs[i];
+				break;
 			}
 		}
+		System.out.println("ISSUE INSRUCTION " + numberOfInstruction + " time "
+				+ time);
+		entry.busy = true;
+		entry.startIssue = time;
+		entry.dest = numberOfInstruction;
+		String name = instr.getInstructionName().toLowerCase();
+		registers.put(instr.getRegA(), numberOfInstruction);
+		entry.status = "ISSUED";
+		switch (name) {
+		case "lw":
+			if (registers.containsKey(instr.getRegB()))
+				entry.qj = registers.get(instr.getRegB());
+			else
+				entry.vj = instr.getRegB();
+			entry.op = "LOAD";
+			entry.A = instr.getImm() + "";
+			busyOfLoads++;
+			break;
+		case "sw":
+			// TODO
+			busyOfStores++;
+			break;
+		case "add":
+		case "sub":
+		case "addi":
+		case "jalr":
+		case "ret":
+		case "beq":
+		case "jmp":
+			if (registers.containsKey(instr.getRegB()))
+				entry.qj = registers.get(instr.getRegB());
+			else
+				entry.vj = instr.getRegB();
+			if (registers.containsKey(instr.getRegC()))
+				entry.qk = registers.get(instr.getRegC());
+			else
+				entry.vk = instr.getRegC();
+			entry.op = "ADD";
+			busyOfAdd++;
+			break;
+		case "mult":
+		case "div":
+			if (registers.containsKey(instr.getRegB()))
+				entry.qj = registers.get(instr.getRegB());
+			else
+				entry.vj = instr.getRegB();
+			if (registers.containsKey(instr.getRegC()))
+				entry.qk = registers.get(instr.getRegC());
+			else
+				entry.vk = instr.getRegC();
+			entry.op = "MULT/DIV";
+			busyOfMultiply++;
+			break;
+		case "nand":
+			if (registers.containsKey(instr.getRegB()))
+				entry.qj = registers.get(instr.getRegB());
+			else
+				entry.vj = instr.getRegB();
+			if (registers.containsKey(instr.getRegC()))
+				entry.qk = registers.get(instr.getRegC());
+			else
+				entry.vk = instr.getRegC();
+			entry.op = "LOGIC";
+			busyOfLogic++;
+			break;
+
+		default:
+			System.out
+					.println("No defined instruction class reserverion stations");
+		}
+
+	}
+
+	public void deleteFromRS(int instructionIndex)
+			throws NumberFormatException, IOException {
+		for (int i = 0; i < rs.length; i++) {
+			if (rs[i].dest == instructionIndex) {
+				rs[i].busy = false;
+				rs[i].dest = -1;
+				rs[i].vj = "";
+				rs[i].vk = "";
+				rs[i].qj = -1;
+				rs[i].qk = -1;
+				rs[i].A = "";
+				rs[i].hat5lsExecuting = 0;
+				break;
+			}
+		}
+		String type = Engine.getInstance().instructions.get(instructionIndex)
+				.getInstructionName().toLowerCase();
+		switch (type) {
+		case "lw":
+			busyOfLoads--;
+			break;
+		case "sw":
+			busyOfStores--;
+			break;
+		case "add":
+		case "sub":
+		case "addi":
+		case "jalr":
+		case "ret":
+		case "beq":
+		case "jmp":
+			busyOfAdd--;
+			break;
+		case "mult":
+		case "div":
+			busyOfMultiply--;
+			break;
+		case "nand":
+			busyOfLogic--;
+			break;
+		}
+	}
+
+	public boolean hasFree(Instruction inst) {
+		String type = inst.getInstructionName().toLowerCase();
+		switch (type) {
+		case "lw":
+			return busyOfLoads < numberOfLoads;
+		case "sw":
+			return busyOfStores < numberOfStores;
+		case "add":
+		case "sub":
+		case "addi":
+		case "jalr":
+		case "ret":
+		case "beq":
+		case "jmp":
+			return busyOfAdd < numberOfAdd;
+		case "mult":
+		case "div":
+			return busyOfMultiply < numberOfMultiply;
+		case "nand":
+			return busyOfLogic < numberOfLogic;
+		default:
+			System.out
+					.println("No defined instruction class reserverion stations");
+		}
 		return false;
 	}
 
-	public void deleteFromRS(int instructionIndex) { // index of instruction
-														// in
-														// ArrayList<Instruction>
+	public void al3bExecute(int time) throws NumberFormatException, IOException {
 		for (int i = 0; i < rs.length; i++) {
-			if (rs[i].get("InstrcutionIndex").equals(instructionIndex + "")) {
-				rs[i].put("Busy", "false");
-				rs[i].put("InstrcutionIndex", "-1");
-				rs[i].put("Vj", "");
-				rs[i].put("Vk", "");
-				rs[i].put("Qj", "");
-				rs[i].put("Qk", "");
-				rs[i].put("Dest", "");
-				rs[i].put("A", "");
+			RSentry entry = rs[i];
+			if (entry.op.equals("LOAD") && entry.startIssue + 2 == time) {
+				entry.status = "EXECUTE";
+				entry.hat5lsExecuting = time
+						+ Engine.getInstance().loadExecuteLatanecy;
+			} else if (entry.op.equals("STORE") && entry.startIssue + 1 == time) {
+				// TODO STORE
+			} else {
+				if (!entry.vj.equals("") && !entry.vk.equals("")) {
+					if (!entry.op.equals("LOAD")
+							&& time >= entry.startIssue + 1
+							&& entry.status.equals("ISSUED")) {
+						String op = entry.op;
+						entry.status = "EXECUTE";
+						switch (op) {
+						case "ADD":
+							entry.hat5lsExecuting = time
+									+ Engine.getInstance().addExecuteLatency;
+							break;
+						case "MULT/DIV":
+							entry.hat5lsExecuting = time
+									+ Engine.getInstance().multExecuteLatency;
+							break;
+						case "LOGIC":
+							entry.hat5lsExecuting = time
+									+ Engine.getInstance().logicExecuteLatency;
+							break;
+						default:
+							System.out.println("Undefined 7amada opCode");
+						}
+					}
+					// entry.hat5lsExecuting--;
+				}
+			}
+		}
+
+	}
+
+	public void al3bWrite(int time) throws NumberFormatException, IOException {
+		for (RSentry entry : rs) {
+			if (time == entry.hat5lsExecuting + 1 && time != 0
+					&& entry.status.equals("EXECUTE")) {
+				// TODO el writing buffer
+				entry.status = "WRITING";
+				// al3b f el ROB
+				for (int i = 0; i < Engine.getInstance().rob.table.length; i++) {
+					if (Engine.getInstance().rob.table[i].instructionIndex == entry.dest) {
+						System.out.println("WRITE INSTRUCTION " + entry.dest
+								+ " time " + time);
+						Engine.getInstance().rob.table[i].khalstExecute = entry.hat5lsExecuting;
+						Engine.getInstance().rob.table[i].ready = true;
+						Engine.getInstance().rob.table[i].value = Engine
+								.getInstance().instructions
+								.get(Engine.getInstance().rob.table[i].instructionIndex)
+								.execute();
+						break;
+					}
+				}
+				int dest = entry.dest;
+				for (RSentry ent : rs) {
+					if (ent.busy && ent.dest != entry.dest) {
+						if (ent.qj != null && ent.qj == dest) {
+							ent.vj = Engine.getInstance().instructions.get(
+									entry.dest).getRegA();
+						} else if (ent.qk != null && ent.qk == dest) {
+							ent.vk = Engine.getInstance().instructions.get(
+									entry.dest).getRegA();
+						}
+					}
+				}
+				registers.remove(Engine.getInstance().instructions.get(
+						entry.dest).getRegA());
+				deleteFromRS(entry.dest);
+			}
+		}
+	}
+
+	public void al3bCommit(int time) throws NumberFormatException, IOException {
+		for (int i = 0; i < Engine.getInstance().rob.table.length; i++) {
+			ROBentry entry = Engine.getInstance().rob.table[i];
+			if (time > entry.khalstExecute + 1 && entry.ready
+					&& entry.tailWa2f3alya) {
+				// 7ark head we delete from ROB
+				// delete from resgisters
+				System.out.println("COMMIT INSTRUCTION "
+						+ entry.instructionIndex + " at time " + time);
+				RegisterFile.getInstance().setValueAt(
+						Engine.getInstance().instructions.get(
+								entry.instructionIndex).getRegA(), entry.value);
+				entry.free = true;
+				entry.dest = "";
+				entry.ready = false;
+				entry.type = "";
+				entry.instructionIndex = -1;
+				entry.value = -1;
+				entry.tailWa2f3alya = false;
+				Engine.getInstance().numberOfCommitedInstructions++;
+				Engine.getInstance().rob.table[(i + 1)
+						% Engine.getInstance().rob.table.length].tailWa2f3alya = true;
 				break;
 			}
 		}
 	}
 
-	public void updateRSentry(String instrIndex, String busy, String vj,
-			String vk, String qj, String qk, String dest, String a,
-			String state, String execCyclesLeft) {
-		for (int i = 0; i < rs.length; i++) {
-			if (rs[i].get("InstrcutionIndex").equals(instrIndex + "")) {
-				if (busy != null) {
-					rs[i].put("Busy", busy);
-				}
-				if (vj != null) {
-					rs[i].put("Vj", vj);
-				}
-				if (vk != null) {
-					rs[i].put("Vk", vk);
-				}
-				if (qj != null) {
-					rs[i].put("Qj", qj);
-				}
-				if (qk != null) {
-					rs[i].put("Qk", qk);
-				}
-				if (dest != null) {
-					rs[i].put("Dest", dest);
-				}
-				if (a != null) {
-					rs[i].put("A", a);
-				}
-				if (state != null) {
-					rs[i].put("State", state);
-				}
-				if (execCyclesLeft != null) {
-					rs[i].put("ExecCyclesLeft", execCyclesLeft);
-				}
-				break;
-			}
+	public String toString() {
+		StringBuilder out = new StringBuilder();
+		for (RSentry entry : rs) {
+			out.append("Busy " + entry.busy + " op " + entry.op + " VJ "
+					+ entry.vj + " QJ " + entry.qj + " VK " + entry.vk + " QK "
+					+ entry.qk + " hat5ls emta " + entry.hat5lsExecuting
+					+ " start issue " + entry.startIssue + " dest "
+					+ entry.dest);
+			out.append("\n");
 		}
-	}
 
-	public HashMap<String, String> getRSentryOfInstruction(int instrIndex) {
-		for (int i = 0; i < rs.length; i++) {
-			if (rs[i].get("InstrcutionIndex").equals(instrIndex + "")) {
-				return rs[i];
-			}
-		}
-		return null;
+		return out.toString();
+
 	}
 }

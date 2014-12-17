@@ -169,35 +169,34 @@ public class Cache {
 		return blockNumber % this.sets;
 	}
 
-	public void printCache() {
-		System.out.println("Data Cache");
-		System.out.println("Access" + noOfAccesses);
-		System.out.println("Misses" + noOfMisses);
-		System.out.println("Hit Ratio " + getHitRatio());
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Access" + noOfAccesses + "\n");
+		sb.append("Misses" + noOfMisses + "\n");
+		sb.append("Hit Ratio " + getHitRatio() + "\n");
+
 		int blocks = 0;
 		int entries = 0;
 		for (int i = 0; i < sets; i++) {
-			System.out.println("Set " + i);
+			sb.append("Set " + i + "\n");
 			for (int j = 0; j < associativity; j++) {
-				System.out.println(" Block " + blocks);
+				sb.append(" Block " + blocks + "\n");
 				Iterator it = this.data[blocks].entrySet().iterator();
 				for (int k = 0; k < blockSize; k++) {
 					while (it.hasNext()) {
-						System.out.println("  Entry " + entries);
+						sb.append("  Entry " + entries + "\n");
 						Map.Entry pairs = (Map.Entry) it.next();
-						System.out.println("   data of " + pairs.getKey()
-								+ " = " + pairs.getValue() + " ");
+						sb.append("   data of " + pairs.getKey() + " = "
+								+ pairs.getValue() + " \n");
 						it.remove();
 						entries++;
 
 					}
-
 				}
 				blocks++;
 			}
 		}
-		System.out.println("====================");
-
+		return sb.toString();
 	}
 
 	public int getNoOfCycles() {
@@ -251,5 +250,17 @@ public class Cache {
 
 	public boolean[] getDirtyFlags() {
 		return this.dirtyFlags;
+	}
+
+	public int getBlockSize() {
+		return this.blockSize;
+	}
+
+	public int getSize() {
+		return this.size;
+	}
+
+	public int getBlockNumbers() {
+		return this.size / this.blockSize;
 	}
 }

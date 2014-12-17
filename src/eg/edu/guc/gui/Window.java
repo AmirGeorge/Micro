@@ -6,6 +6,8 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -13,13 +15,15 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+
+import eg.edu.guc.micro.Cache;
+import eg.edu.guc.micro.Engine;
 
 @SuppressWarnings("serial")
 public class Window extends JFrame {
@@ -38,8 +42,11 @@ public class Window extends JFrame {
 
 	/**
 	 * Create the frame.
+	 * 
+	 * @throws IOException
+	 * @throws NumberFormatException
 	 */
-	public Window() {
+	public Window() throws NumberFormatException, IOException {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(230, 70, 1024, 768);
 		setResizable(false);
@@ -112,17 +119,16 @@ public class Window extends JFrame {
 		tabbedPane_caches = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane_caches.setBounds(618, 32, 400, 707);
 		panel_container.add(tabbedPane_caches);
-
-		populateCacheTabs();
+		// populateCacheTabs();
 
 		JScrollPane scrollPane_memory = new JScrollPane();
 		tabbedPane_caches.addTab("Memory", null, scrollPane_memory, null);
 
 		// TODO fix, gives java heap size error in designer
-		// Integer[][] values = new Integer[1024 * 64][2];
-		// String[] columns2 = { "Address", "Data" };
-		// table_memory = new JTable(values, columns2);
-		table_memory = new JTable();
+		Integer[][] values = new Integer[1024 * 64][2];
+		String[] columns2 = { "Address", "Data" };
+		table_memory = new JTable(values, columns2);
+		table_memory.setValueAt(123, 0, 0);
 		scrollPane_memory.setViewportView(table_memory);
 
 		initRunButton();
@@ -176,6 +182,7 @@ public class Window extends JFrame {
 							editorPane_hardware.getText(),
 							editorPane_code.getText(),
 							editorPane_data.getText());
+					populateCacheTabs();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -185,13 +192,39 @@ public class Window extends JFrame {
 		});
 	}
 
-	private void populateCacheTabs() {
-		for (int i = 0; i < 3; i++) {
-			JPanel jp = new JPanel();
-			JLabel jl = new JLabel();
-			jl.setText("Dah L" + (i + 1));
-			jp.add(jl);
-			tabbedPane_caches.add("L" + (i + 1), jp);
+	public void populateCacheTabs() throws NumberFormatException, IOException {
+		for (int i = 0; i < Engine.getInstance().getCaches().size(); i++) {
+			Cache c = Engine.getInstance().getCaches().get(i);
+
+			JScrollPane scrollPane_cache = new JScrollPane();
+			tabbedPane_caches.addTab("L " + (i + 1), null, scrollPane_cache,
+					null);
+			String[] columns2 = new String[c.getBlockSize() * 2 + 1];
+			Integer[][] values = new Integer[c.getBlockNumbers()][columns2.length];
+			columns2[0] = "Block Number";
+			for (int j = 1; j < columns2.length; j += 2) {
+				columns2[j] = ("Address ");
+				columns2[j + 1] = ("Data ");
+
+			}
+			JTable table_cache = new JTable(values, columns2);
+			System.out.println(c.toString());
+			for (int j = 0; j < c.getBlockNumbers(); j++) {
+				table_cache.setValueAt(j, j, 0);
+				Iterator it = c.getData()[j].entrySet().iterator();
+				int cel1 = 1;
+				for (int k = 0; k < c.getBlockSize(); k++) {
+					while (it.hasNext()) {
+						Map.Entry pairs = (Map.Entry) it.next();
+						Object addresse = pairs.getKey();
+						Object data = pairs.getValue();
+						table_cache.setValueAt(addresse, j, cel1);
+						table_cache.setValueAt(data, j, cel1 + 1);
+						cel1 += 2;
+					}
+				}
+			}
+			scrollPane_cache.setViewportView(table_cache);
 		}
 
 	}

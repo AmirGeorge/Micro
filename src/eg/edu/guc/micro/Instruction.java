@@ -4,6 +4,7 @@ import java.io.IOException;
 
 public class Instruction {
 	private InstructionType type;
+	private String instType;
 	private String instructionName;
 	private String regA;
 	private String regB;
@@ -11,25 +12,24 @@ public class Instruction {
 	private short imm;
 	private int label = -1;
 
+	public String getInstType() {
+		return this.instType;
+	}
+
 	public Instruction() {
 	}
 
-	public void execute() throws NumberFormatException, IOException {
+	public short execute() throws NumberFormatException, IOException {
+		short result = 0;
 		RegisterFile regFile = RegisterFile.getInstance();
-		System.out.println(this);
 		if (type == InstructionType.MEMORY_ACCESS) {
 			Engine eng = Engine.getInstance();
 			if (instructionName.equals("LW")) {
-				System.out.println(regFile.getRegFile());
-
-				regFile.setValueAt(
-						regA,
-						eng.loadDataFromCaches(
-								(short) (regFile.getValueAt(regB)) + imm, 0));
-				System.out.println("knasdjsaidsaduisaodhisa");
-				System.out.println(regFile.getRegFile());
+				result = eng.loadDataFromCaches(
+						(short) (regFile.getValueAt(regB)) + imm, 0);
+				// regFile.setValueAt(regA, (short) result);
 			} else if (instructionName.equals("SW")) {
-
+				result = (short) (regFile.getValueAt(regB) + imm);
 				eng.writeData(0, regFile.getValueAt(regA),
 						(short) (regFile.getValueAt(regB) + imm));
 			}
@@ -49,33 +49,44 @@ public class Instruction {
 								* 2);
 				}
 			} else if (instructionName.equals("JALR")) {
-				regFile.setValueAt(regA, (short) (eng.getPC() + 1));
+				// regFile.setValueAt(regA, (short) (eng.getPC() + 1));
 				eng.setPC(regFile.getValueAt(regB));
 			} else if (instructionName.equals("RET")) {
 				eng.setPC(regFile.getValueAt(regA));
 			}
 		} else if (type == InstructionType.ALU) {
+
 			if (instructionName.equals("ADD")) {
-				regFile.setValueAt(regA,
-						(short) (regFile.getValueAt(regB) + regFile
-								.getValueAt(regC)));
+				result = (short) (regFile.getValueAt(regB) + regFile
+						.getValueAt(regC));
+				// regFile.setValueAt(regA,
+				// (short) (regFile.getValueAt(regB) + regFile
+				// .getValueAt(regC)));
 			} else if (instructionName.equals("SUB")) {
-				regFile.setValueAt(regA,
-						(short) (regFile.getValueAt(regB) - regFile
-								.getValueAt(regC)));
+				result = (short) (regFile.getValueAt(regB) - regFile
+						.getValueAt(regC));
+				// regFile.setValueAt(regA,
+				// (short) (regFile.getValueAt(regB) - regFile
+				// .getValueAt(regC)));
 			} else if (instructionName.equals("ADDI")) {
-				regFile.setValueAt(regA,
-						(short) (regFile.getValueAt(regB) + imm));
+				result = (short) (regFile.getValueAt(regB) + imm);
+				// regFile.setValueAt(regA,
+				// (short) (regFile.getValueAt(regB) + imm));
 			} else if (instructionName.equals("NAND")) {
-				regFile.setValueAt(regA,
-						(short) (~(regFile.getValueAt(regB) & regFile
-								.getValueAt(regC))));
+				result = (short) ~(regFile.getValueAt(regB) & regFile
+						.getValueAt(regC));
+				// regFile.setValueAt(regA,
+				// (short) (~(regFile.getValueAt(regB) & regFile
+				// .getValueAt(regC))));
 			} else if (instructionName.equals("MUL")) {
-				regFile.setValueAt(regA,
-						(short) (regFile.getValueAt(regB) * regFile
-								.getValueAt(regC)));
+				result = (short) (regFile.getValueAt(regB) * regFile
+						.getValueAt(regC));
+				// regFile.setValueAt(regA,
+				// (short) (regFile.getValueAt(regB) * regFile
+				// .getValueAt(regC)));
 			}
 		}
+		return result;
 	}
 
 	public InstructionType getType() {
