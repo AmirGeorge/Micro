@@ -129,6 +129,7 @@ public class Window extends JFrame {
 		String[] columns2 = { "Address", "Data" };
 		table_memory = new JTable(values, columns2);
 		table_memory.setValueAt(123, 0, 0);
+		// table_memory = new JTable();
 		scrollPane_memory.setViewportView(table_memory);
 
 		initRunButton();

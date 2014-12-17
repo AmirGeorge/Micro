@@ -2,7 +2,9 @@ package eg.edu.guc.gui;
 
 import java.awt.EventQueue;
 import java.io.IOException;
+
 import eg.edu.guc.micro.Engine;
+import eg.edu.guc.micro.Memory;
 import eg.edu.guc.parser.Parser;
 
 public class Adapter {
@@ -43,11 +45,21 @@ public class Adapter {
 		// TODO pass data to Parser and Engine
 		if (Parser.getInstance().parse(code) != null) {
 			Engine.getInstance().readCacheInputs(hierarchy);
-			Engine.getInstance().run();
+			// Engine.getInstance().run();
 		}
 		populateGUI();
 	}
 
 	private void populateGUI() throws IOException {
+		// LinkedList<Cache> caches = Engine.getInstance().getCaches();
+		Memory memory = Engine.getInstance().getMemory();
+		// StringBuilder sb = Engine.getInstance().getGUIConsoleOutput();
+
+		// TODO populate caches
+
+		// TODO populate memory
+
+		// populate console output
+		// frame.editorPane_output.setText(sb.toString());
 	}
 }

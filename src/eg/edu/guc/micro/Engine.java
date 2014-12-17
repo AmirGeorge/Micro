@@ -58,30 +58,20 @@ public class Engine {
 		RS = new ReservationStation(1, 0, 0, 2, 0);
 		rob = new ROB(3);
 
+		// guiConsoleOutput = new StringBuilder();
+		// memory.setData(0, (short) 10);
+		// memory.setData(1, (short) 20);
+		// memory.setData(100, (short) 100);
+		// memory.setData(101, (short) 101);
+		// readCacheInputs();
+		// readInstructions();
 	}
 
 	public LinkedList<Cache> getCaches() {
 		return this.caches;
 	}
 
-	public void run() throws NumberFormatException, IOException {
-		int previousPC = pc;
-		while ((pc - instructionsStartingAddress) / 2 < instructions.size()) {
-			getInstructionFromCaches(pc);
-			instructions.get((pc - instructionsStartingAddress) / 2).execute();
-			numberOfExecutedInstructions++;
-			if (pc == previousPC) { // no branch or jump occured
-				pc += 2;// each instruction occupies 2 places in memory
-				previousPC += 2;
-			} else { // a branch or jump occured
-				previousPC = pc;
-			}
-		}
-		System.out.println(numberOfExecutedInstructions);
-		System.out.println("AMAT (Number of cycels) " + numberOfCycles);
-	}
-
-	static int x = 0;
+	private int x = 0;
 
 	public void runNew() throws NumberFormatException, IOException {
 		int previousPC = pc;
@@ -143,6 +133,7 @@ public class Engine {
 		System.out.println("==================END===================");
 		System.out.println("Time without calculating caches is " + time);
 
+		// TODO
 		// check on pc same as original run and in the loop:
 		// 1)if there is space in instruction buffer fetch a max of m
 		// instructions
@@ -292,11 +283,10 @@ public class Engine {
 		}
 	}
 
-	public void readCacheInputs(String hierarchy) throws NumberFormatException,
-			IOException {
+	public void readCacheInputs(String hierarchy) throws IOException {
 		StringTokenizer tkn = new StringTokenizer(hierarchy);
 		// start addres
-		this.instructionsStartingAddress = Integer.parseInt(tkn.nextToken());
+		setInstructionsStartingAddress(Integer.parseInt(tkn.nextToken()));
 		// Memoery Access Time
 		// System.out.println("Enter the Memory access time");
 		int hitTimeMemory = Integer.parseInt(tkn.nextToken());
@@ -375,12 +365,8 @@ public class Engine {
 		return this.numberOfCycles;
 	}
 
-	public StringBuilder getSb() {
-		return sb;
-	}
-
-	public void AppendTOSb(String s) {
-		sb.append(s);
+	public int getInstructionIndexFromPC() {
+		return (pc - instructionsStartingAddress) / 2;
 	}
 
 }

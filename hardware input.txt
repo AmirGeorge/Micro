@@ -1,0 +1,15 @@
+/*
+Pipeline width
+Instruction buffer size
+Number of RS for Load
+Number of RS for Store
+Number of RS for Mul (multiply and divide)
+Number of RS for Add (add, sub, jump, beq)
+Number of RS for Logic (logical operations)
+ROB size
+load Latency
+Store Latency
+Mul Latency
+Add Latency
+Logic Latency
+*/
