@@ -15,6 +15,7 @@ public class RSentry {
 	boolean busy;
 	int startIssue;
 	int hat5lsExecuting;
+	int hat5lsWriting;
 
 	public RSentry() {
 		dest = -1;

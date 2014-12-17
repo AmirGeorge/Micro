@@ -27,6 +27,7 @@ public class Engine {
 	public ROB rob;
 	public int robSize;
 	public int loadExecuteLatanecy;
+	public int storeExecuteLatanecy;
 	public int addExecuteLatency;
 	public int multExecuteLatency;
 	public int logicExecuteLatency;
@@ -55,8 +56,10 @@ public class Engine {
 		instructionBuffer = new InstructionBuffer();
 		// HARDCODE 2
 		// load store mult add logic
-		RS = new ReservationStation(1, 0, 0, 2, 0);
-		rob = new ROB(3);
+		RS = new ReservationStation(1, 1, 1, 2, 0);
+		// RS = new ReservationStation(0, 0, 0, 10, 0);
+
+		rob = new ROB(4);
 
 		// guiConsoleOutput = new StringBuilder();
 		// memory.setData(0, (short) 10);
@@ -117,7 +120,7 @@ public class Engine {
 			if (numberOfCommitedInstructions == instructions.size()) {
 				break;
 			}
-			if (x == 15)
+			if (x == 20)
 				break;
 			x++;
 			time++;
@@ -315,14 +318,6 @@ public class Engine {
 			// caches.get(i - 1).printCache();
 		}
 
-	}
-
-	public void displayMemory() {
-		// TODO
-	}
-
-	public void displayCaches() {
-		// TODO
 	}
 
 	public int getPC() {
