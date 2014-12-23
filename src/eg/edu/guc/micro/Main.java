@@ -12,19 +12,28 @@ public class Main {
 
 		Parser parser = Parser.getInstance();
 		if (parser
-				.parse(" LW $R2,$R1,10 \n add $R3,$R2,$R1 \n add $R5,$R3,$R4") != null) {
+		// .parse(" LW $R2,$R1,10 \n add $R3,$R2,$R6 \n sub $R5,$R3,$R4 \n SW $R5,$R1,10")
+		// != null) {
+		// .parse("addi $R5,$R2,10") != null) {
+				.parse("addi $R3,$R3,1  \n  BEQ $R1,$R3,end \n addi $R1,$R1,1 \n   JMP $R6,-2 \n end: \n addi $R4,$R5,3 ") != null) {
+			// .parse("addi $R5,$R2,10") != null) {
 			Engine x = Engine.getInstance();
-			// x.getInstance().getMemory().setAccessTime(130);
-			x.getInstance().getMemory().setData(10, (short) 100);
-			RegisterFile.getInstance().setValueAt("$R4", (short) 10);
-			x.mWay = 3;
+			// x.instructionsStartingAddress = 200;
+			x.getInstance().getMemory().setAccessTime(130);
+			// x.getInstance().getMemory().setData(10, (short) 100);
+			RegisterFile.getInstance().setValueAt("$R5", (short) 10);
+			// RegisterFile.getInstance().setValueAt("$R4", (short) 50);
+			x.mWay = 1;
 			// x.getMemory().setData(10, (short) 100);
 			x.addExecuteLatency = 2;
 			x.loadExecuteLatanecy = 2;
-			x.robSize = 3;
+			x.storeExecuteLatanecy = 2;
+			x.multExecuteLatency = 2;
+			x.robSize = 1;
 			x.runNew();
-			System.out.println("$R5 "
-					+ RegisterFile.getInstance().getValueAt("$R5"));
+			// System.out.println("$R4 "
+			// + RegisterFile.getInstance().getValueAt("$R4"));
+			// System.out.println("After " + x.getMemory().getData(10));
 		}
 		// if (parser
 		// //

@@ -6,6 +6,8 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -24,6 +26,8 @@ import javax.swing.border.EmptyBorder;
 
 import eg.edu.guc.micro.Cache;
 import eg.edu.guc.micro.Engine;
+import eg.edu.guc.parser.Parser;
+import eg.edu.guc.parser.ParserError;
 
 @SuppressWarnings("serial")
 public class Window extends JFrame {
@@ -183,6 +187,34 @@ public class Window extends JFrame {
 							editorPane_hardware.getText(),
 							editorPane_code.getText(),
 							editorPane_data.getText());
+					if (Parser.getInstance().parse(editorPane_code.getText()) != null) {
+						Engine.getInstance().readCacheInputs(
+								editorPane_hierarchy.getText());
+						Engine x = Engine.getInstance();
+						// x.mWay = 1;
+						x.getMemory().setData(10, (short) 100);
+						// x.addExecuteLatency = 2;
+						// x.loadExecuteLatanecy = 2;
+						// x.storeExecuteLatanecy = 2;
+						// x.multExecuteLatency = 2;
+						// x.robSize = 1;
+						x.runNew();
+						Engine.getInstance().runNew();
+						// x.sb.append(x.getMemory().getData(10)+"\n");
+						editorPane_output.setText(x.sb.toString());
+						System.out.println(x.sb.toString());
+						x.sb = new StringBuilder();
+
+					} else {
+						// ArrayList<ParserError> errors =
+						// Parser.getInstance().errors;
+						editorPane_output.setText(ParserError.out.toString());
+						// for (int i = 0; i < errors.size(); i++) {
+						// editorPane_code.setText(errors.get(i).);
+						// }
+						// editorPane_output.setText(Collections.toString(Parser
+						// .getInstance().errors.toString()));
+					}
 					populateCacheTabs();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
