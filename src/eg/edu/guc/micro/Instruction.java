@@ -36,11 +36,15 @@ public class Instruction {
 		} else if (type == InstructionType.CONTROL) {
 			Engine eng = Engine.getInstance();
 			if (instructionName.equals("JMP")) {
-				if (label == -1)
-					eng.setPC(eng.getPC() + 1 + regFile.getValueAt(regA) + imm);
-				else
-					eng.setPC(eng.getInstructionsStartingAddress() + label * 2);
+				Engine.getInstance().hasl = true;
+				Engine.getInstance().jmp = true;
+				// if (label == -1)
+				// eng.setPC(eng.getPC() + 1 + regFile.getValueAt(regA) + imm);
+				// else
+				eng.setPC(eng.getPC() + imm * 2);
+				// System.out.println(eng.getPC());
 			} else if (instructionName.equals("BEQ")) {
+				Engine.getInstance().hasl = true;
 				if (regFile.getValueAt(regA) == regFile.getValueAt(regB)) {
 					if (label == -1)
 						eng.setPC(eng.getPC() + 1 + imm);
@@ -69,6 +73,7 @@ public class Instruction {
 				// (short) (regFile.getValueAt(regB) - regFile
 				// .getValueAt(regC)));
 			} else if (instructionName.equals("ADDI")) {
+
 				result = (short) (regFile.getValueAt(regB) + imm);
 				// regFile.setValueAt(regA,
 				// (short) (regFile.getValueAt(regB) + imm));

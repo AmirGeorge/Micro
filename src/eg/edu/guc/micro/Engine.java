@@ -18,8 +18,8 @@ public class Engine {
 	private int pc;
 	private int numberOfExecutedInstructions = 0;
 	private int numberOfCycles = 0;
-	private int instructionsStartingAddress;
-	private StringBuilder sb;
+	public int instructionsStartingAddress;
+	public StringBuilder sb;
 	private int time = 0;
 	private InstructionBuffer instructionBuffer;
 	public int mWay;
@@ -31,8 +31,9 @@ public class Engine {
 	public int addExecuteLatency;
 	public int multExecuteLatency;
 	public int logicExecuteLatency;
-
+	public boolean jmp;
 	public int numberOfCommitedInstructions;
+	public boolean hasl = false;
 
 	private Engine() {
 
@@ -54,18 +55,15 @@ public class Engine {
 		sb = new StringBuilder();
 		caches = new LinkedList<Cache>();
 		instructionBuffer = new InstructionBuffer();
-		// HARDCODE 2
 		// load store mult add logic
-		RS = new ReservationStation(1, 1, 1, 2, 0);
+		// RS = new ReservationStation(1, 1, 0, 2, 0);
+		// RS = new ReservationStation(0, 0, 0, 8, 0);
 		// RS = new ReservationStation(0, 0, 0, 10, 0);
 
-		rob = new ROB(4);
-
+		// rob = new ROB(1);
+		instructionsStartingAddress = 200;
+		pc = instructionsStartingAddress;
 		// guiConsoleOutput = new StringBuilder();
-		// memory.setData(0, (short) 10);
-		// memory.setData(1, (short) 20);
-		// memory.setData(100, (short) 100);
-		// memory.setData(101, (short) 101);
 		// readCacheInputs();
 		// readInstructions();
 	}
@@ -77,66 +75,72 @@ public class Engine {
 	private int x = 0;
 
 	public void runNew() throws NumberFormatException, IOException {
-		int previousPC = pc;
-		int indexInstructionFetch = 0;
-		int indexInstructionIssue = 0;
 		while (true) {
 			// Fetching
-			while (instructionBuffer.buffer.size() <= mWay
-					&& indexInstructionFetch < instructions.size()) {
-				// getInstructionFromCaches(pc);
-				instructionBuffer.buffer.add(indexInstructionFetch);
-				indexInstructionFetch++;
-				if (pc == previousPC) {
-					previousPC += 2;
-				} else {
-					previousPC = pc;
-				}
+			while (instructionBuffer.buffer.size() < mWay
+					&& pc < instructionsStartingAddress
+							+ (instructions.size() * 2)) {
+				instructionBuffer.buffer.add(pc);
+				pc += 2;
 			}
 			// Issuing
 			int countIssue = 0;
 			boolean flag = true;
-			while (countIssue < mWay
-					&& indexInstructionIssue < indexInstructionFetch && flag) {
-
-				if (indexInstructionIssue < instructions.size()) {
-					Instruction inst = instructions
-							.get(instructionBuffer.buffer.peek());
-					if (canIssue(inst)) {
-						countIssue++;
-						inst = instructions
-								.get(instructionBuffer.buffer.poll());
-						RS.issue(inst, time, indexInstructionIssue);
-						rob.write(inst, indexInstructionIssue);
-						indexInstructionIssue++;
-					} else {
-						flag = false;
-					}
+			while (countIssue < mWay && flag
+					&& instructionBuffer.buffer.peek() != null) {
+				int index = instructionBuffer.buffer.peek();
+				if (jmp) {
+					instructionBuffer.buffer.peek();
+					index = pc - 2;
+					jmp = false;
+				}
+				index = (index - instructionsStartingAddress) / 2;
+				Instruction inst = instructions.get(index);
+				if (canIssue(inst)) {
+					instructionBuffer.buffer.poll();
+					countIssue++;
+					// System.out.println(inst.toString());
+					inst = instructions.get(index);
+					RS.issue(inst, time, index);
+					rob.write(inst, index);
+				} else {
+					flag = false;
 				}
 			}
 			RS.al3bCommit(time);
 			RS.al3bWrite(time);
 			RS.al3bExecute(time);
-			if (numberOfCommitedInstructions == instructions.size()) {
+			if (hasl) {
+				if (pc >= instructionsStartingAddress
+						+ (instructions.size() * 2))
+					break;
+			} else if (numberOfCommitedInstructions >= instructions.size())
 				break;
-			}
-			if (x == 20)
+
+			if (x == 100)
 				break;
 			x++;
 			time++;
-			System.out.println("Time " + time);
-			System.out.println(RS.toString());
-			System.out.println(rob.toString());
-			System.out.println(RS.registers);
-			System.out
-					.println("=========================================================");
-
+			sb.append("Time " + time + "\n");
+			sb.append(RS.toString() + "\n");
+			sb.append(rob.toString() + "\n");
+			sb.append(RS.registers + "\n");
+			sb.append("========================================================="
+					+ "\n");
 		}
+		System.out.println("Time " + time);
+		System.out.println(RS.toString());
+		System.out.println(rob.toString());
+		System.out.println(RS.registers);
+		System.out
+				.println("=========================================================");
 
-		System.out.println("==================END===================");
-		System.out.println("Time without calculating caches is " + time);
-
-		// TODO
+		sb.append("Number of commited " + numberOfCommitedInstructions + "\n");
+		sb.append("Time without calculating caches " + time);
+		// System.out
+		// .println("number of commited  = " + numberOfCommitedInstructions);
+		// System.out.println("==================END===================");
+		// System.out.println("Time without calculating caches is " + time);
 		// check on pc same as original run and in the loop:
 		// 1)if there is space in instruction buffer fetch a max of m
 		// instructions
@@ -152,6 +156,10 @@ public class Engine {
 	}
 
 	private boolean canIssue(Instruction inst) {
+		// if (x > 35) {
+		// System.out.println("RS " + RS.hasFree(inst));
+		// System.out.println("rob " + rob.hasFree());
+		// }
 		if (RS.hasFree(inst) && rob.hasFree()) {
 			return true;
 		} else
@@ -291,9 +299,21 @@ public class Engine {
 		// start addres
 		setInstructionsStartingAddress(Integer.parseInt(tkn.nextToken()));
 		// Memoery Access Time
-		// System.out.println("Enter the Memory access time");
-		int hitTimeMemory = Integer.parseInt(tkn.nextToken());
-		this.memory.setAccessTime(hitTimeMemory);
+		memory.setAccessTime(Integer.parseInt(tkn.nextToken()));
+		mWay = Integer.parseInt(tkn.nextToken());
+		robSize = Integer.parseInt(tkn.nextToken());
+		rob = new ROB(robSize);
+		int load = Integer.parseInt(tkn.nextToken());
+		int store = Integer.parseInt(tkn.nextToken());
+		int mult = Integer.parseInt(tkn.nextToken());
+		int add = Integer.parseInt(tkn.nextToken());
+		int logic = Integer.parseInt(tkn.nextToken());
+		RS = new ReservationStation(load, store, mult, add, logic);
+		loadExecuteLatanecy = Integer.parseInt(tkn.nextToken());
+		storeExecuteLatanecy = Integer.parseInt(tkn.nextToken());
+		multExecuteLatency = Integer.parseInt(tkn.nextToken());
+		addExecuteLatency = Integer.parseInt(tkn.nextToken());
+		logicExecuteLatency = Integer.parseInt(tkn.nextToken());
 		// System.out.println("Enter the number of cache levels");
 		// cache levels
 		int cacheLevels = Integer.parseInt(tkn.nextToken());
@@ -315,7 +335,6 @@ public class Engine {
 			Cache cache = new Cache(size, blockSize, associativity,
 					writingPolicyHit, writingPolicyMiss, numberOfCycles, i - 1);
 			this.caches.add(cache);
-			// caches.get(i - 1).printCache();
 		}
 
 	}

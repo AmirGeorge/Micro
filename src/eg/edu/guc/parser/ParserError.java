@@ -92,10 +92,16 @@ public class ParserError {
 		return errorMessages;
 	}
 
+	public static StringBuilder out;
+
 	public void printError() {
+		out = new StringBuilder();
+		out.append("Error in \" " + instruction + " \" at line :: "
+				+ lineNumber + "\n");
 		System.out.println("Error in \" " + instruction + " \" at line :: "
 				+ lineNumber);
 		for (String error : errorMessages) {
+			out.append(error);
 			System.out.println(error);
 		}
 	}

@@ -32,7 +32,8 @@ public class ReservationStation {
 		registers = new HashMap<String, Integer>();
 	}
 
-	public void issue(Instruction instr, int time, int numberOfInstruction) {
+	public void issue(Instruction instr, int time, int numberOfInstruction)
+			throws NumberFormatException, IOException {
 		RSentry entry = new RSentry();
 		for (int i = 0; i < rs.length; i++) {
 			if (!rs[i].busy) {
@@ -40,13 +41,16 @@ public class ReservationStation {
 				break;
 			}
 		}
-		System.out.println("ISSUE INSRUCTION " + numberOfInstruction + " time "
-				+ time);
+		// System.out.printSln("ISSUE INSRUCTION " + numberOfInstruction +
+		// " time "
+		// + time);
+		Engine.getInstance().sb.append("ISSUE INSRUCTION "
+				+ numberOfInstruction + " time " + time);
 		entry.busy = true;
 		entry.startIssue = time;
 		entry.dest = numberOfInstruction;
 		String name = instr.getInstructionName().toLowerCase();
-		if (!name.equals("sw"))
+		if (!name.equals("sw") && !name.equals("beq") && (!name.equals("jmp")))
 			registers.put(instr.getRegA(), numberOfInstruction);
 		entry.status = "ISSUED";
 		switch (name) {
@@ -72,25 +76,37 @@ public class ReservationStation {
 			entry.A = instr.getImm() + "";
 			busyOfStores++;
 			break;
+		case "beq":
+			entry.op = "BEQ";
+			entry.vj = instr.getRegA() + "";
+			entry.vk = instr.getRegB() + "";
+			busyOfAdd++;
+			break;
+		case "jmp":
+			entry.op = "JMP";
+			entry.vj = instr.getRegB() + "";
+			entry.A = instr.getImm() + "";
+			busyOfAdd++;
+			break;
 		case "add":
 		case "sub":
 		case "addi":
 		case "jalr":
 		case "ret":
-		case "beq":
-		case "jmp":
-			if (registers.containsKey(instr.getRegB()))
+			if (registers.containsKey(instr.getRegB())
+					&& (!instr.getRegB().equals(instr.getRegA()))) {
 				entry.qj = registers.get(instr.getRegB());
-			else
+			} else
 				entry.vj = instr.getRegB();
-			if (registers.containsKey(instr.getRegC()))
+			if (registers.containsKey(instr.getRegC())
+					&& (!instr.getRegC().equals(instr.getRegA())))
 				entry.qk = registers.get(instr.getRegC());
 			else
 				entry.vk = instr.getRegC();
 			entry.op = "ADD";
 			busyOfAdd++;
 			break;
-		case "mult":
+		case "mul":
 		case "div":
 			if (registers.containsKey(instr.getRegB()))
 				entry.qj = registers.get(instr.getRegB());
@@ -135,6 +151,7 @@ public class ReservationStation {
 				rs[i].qk = -1;
 				rs[i].A = "";
 				rs[i].hat5lsExecuting = 0;
+				rs[i].op = "";
 				break;
 			}
 		}
@@ -156,7 +173,7 @@ public class ReservationStation {
 		case "jmp":
 			busyOfAdd--;
 			break;
-		case "mult":
+		case "mul":
 		case "div":
 			busyOfMultiply--;
 			break;
@@ -181,7 +198,7 @@ public class ReservationStation {
 		case "beq":
 		case "jmp":
 			return busyOfAdd < numberOfAdd;
-		case "mult":
+		case "mul":
 		case "div":
 			return busyOfMultiply < numberOfMultiply;
 		case "nand":
@@ -196,10 +213,24 @@ public class ReservationStation {
 	public void al3bExecute(int time) throws NumberFormatException, IOException {
 		for (int i = 0; i < rs.length; i++) {
 			RSentry entry = rs[i];
+
 			if (entry.op.equals("LOAD") && entry.startIssue + 2 == time) {
 				entry.status = "EXECUTE";
 				entry.hat5lsExecuting = time
 						+ Engine.getInstance().loadExecuteLatanecy;
+
+			} else if (entry.op.equals("JMP") && time >= entry.startIssue + 1
+					&& entry.status.equals("ISSUED")) {
+				entry.status = "EXECUTE";
+				entry.hat5lsExecuting = time
+						+ Engine.getInstance().addExecuteLatency;
+				Engine.getInstance().instructions.get(entry.dest).execute();
+
+			} else if (entry.op.equals("BEQ") && time >= entry.startIssue + 1
+					&& entry.status.equals("ISSUED")) {
+				entry.status = "EXECUTE";
+				entry.hat5lsExecuting = time
+						+ Engine.getInstance().addExecuteLatency;
 			} else if (entry.op.equals("STORE") && time >= entry.startIssue + 1
 					&& entry.vj != "" && entry.status.equals("ISSUED")) {
 				entry.op = "STORE";
@@ -208,23 +239,8 @@ public class ReservationStation {
 				entry.hat5lsWriting = time
 						+ Engine.getInstance().storeExecuteLatanecy;
 			} else {
-				if (entry.dest != -1
-						&& Engine.getInstance().instructions.get(entry.dest)
-								.getInstructionName().toLowerCase()
-								.equals("beq")) {
-					entry.op = "ADD";
-					entry.status = "EXECUTE";
-					entry.hat5lsExecuting = time
-							+ Engine.getInstance().addExecuteLatency;
-				} else if (entry.dest != -1
-						&& Engine.getInstance().instructions.get(entry.dest)
-								.getInstructionName().toLowerCase()
-								.equals("jmp")) {
-					entry.op = "ADD";
-					entry.status = "EXECUTE";
-					entry.hat5lsExecuting = time
-							+ Engine.getInstance().addExecuteLatency;
-				} else if (entry.vk == null) {
+
+				if (entry.vk == null && !entry.op.equals("BEQ")) {
 					// imm
 					if (!entry.vj.equals("") && entry.startIssue + 1 == time
 							&& entry.status.equals("ISSUED")) {
@@ -233,7 +249,7 @@ public class ReservationStation {
 						entry.status = "EXECUTE";
 
 					}
-				} else {
+				} else if (!entry.op.equals("BEQ")) {
 					if (!entry.vj.equals("") && !entry.vk.equals("")) {
 						if (!entry.op.equals("LOAD")
 								&& time >= entry.startIssue + 1
@@ -277,16 +293,27 @@ public class ReservationStation {
 					if (Engine.getInstance().rob.table[i].instructionIndex == entry.dest) {
 						if (entry.op.equals("STORE")) {
 							Engine.getInstance().rob.table[i].khalstExecute = entry.hat5lsWriting;
-							System.out
-									.println("WRITE INSTRUCTION "
+							// System.out
+							// .println("WRITE INSTRUCTION "
+							// + entry.dest
+							// + " time "
+							// + (time
+							// + Engine.getInstance().storeExecuteLatanecy -
+							// 1));
+							Engine.getInstance().sb
+									.append("WRITE INSTRUCTION "
 											+ entry.dest
 											+ " time "
 											+ (time
-													+ Engine.getInstance().storeExecuteLatanecy - 1));
+													+ Engine.getInstance().storeExecuteLatanecy - 1)
+											+ "\n");
 						} else {
-							System.out.println("WRITE INSTRUCTION "
+							Engine.getInstance().sb.append("WRITE INSTRUCTION "
 									+ entry.dest + " time " + time);
-							Engine.getInstance().rob.table[i].khalstExecute = entry.hat5lsExecuting;
+							// System.out.println("WRITE INSTRUCTION "
+							// + entry.dest + " time " + time);
+							// Engine.getInstance().rob.table[i].khalstExecute =
+							// entry.hat5lsExecuting;
 						}
 						Engine.getInstance().rob.table[i].ready = true;
 						Engine.getInstance().rob.table[i].value = Engine
@@ -323,8 +350,10 @@ public class ReservationStation {
 					&& entry.tailWa2f3alya) {
 				// 7ark head we delete from ROB
 				// delete from resgisters
-				System.out.println("COMMIT INSTRUCTION "
-						+ entry.instructionIndex + " at time " + time);
+				// System.out.println("COMMIT INSTRUCTION "
+				// + entry.instructionIndex + " at time " + time);
+				Engine.getInstance().sb.append("COMMIT INSTRUCTION "
+						+ entry.instructionIndex + " at time " + time + "\n");
 				RegisterFile.getInstance().setValueAt(
 						Engine.getInstance().instructions.get(
 								entry.instructionIndex).getRegA(), entry.value);

@@ -10,7 +10,7 @@ import eg.edu.guc.micro.InstructionType;
 public class Parser {
 
 	private static Parser _instance;
-	private static ArrayList<ParserError> errors = new ArrayList<ParserError>();
+	public static ArrayList<ParserError> errors = new ArrayList<ParserError>();
 	private static ArrayList<Instruction> _parsedcode;
 	private static int lineNumber = 0;
 	private static Hashtable<String, String> labels = new Hashtable<String, String>();
@@ -25,7 +25,7 @@ public class Parser {
 	// else return null
 	public ArrayList<Instruction> parse(String submittedCode)
 			throws NumberFormatException, IOException {
-//		submittedCode += "\n END";
+		// submittedCode += "\n END";
 		ArrayList<Instruction> parsedCode = new ArrayList<Instruction>();
 		// for labels
 
@@ -39,7 +39,7 @@ public class Parser {
 			}
 		}
 
-	//	System.out.println(labels);
+		// System.out.println(labels);
 
 		for (String instruction : submittedCode.split("\n")) {
 			Object newInstruction = instructionSyntax(instruction);
